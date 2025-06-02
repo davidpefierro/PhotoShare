@@ -8,7 +8,7 @@ CREATE TABLE usuario (
     apellidos VARCHAR(150) NOT NULL,
     nombre_usuario VARCHAR(50) NOT NULL UNIQUE,
     correo VARCHAR(100) NOT NULL UNIQUE,
-    contraseña VARCHAR(255) NOT NULL,
+    contrasena VARCHAR(255) NOT NULL,
     fecha_registro DATETIME NOT NULL,
     rol ENUM('Usuario', 'Administrador') NOT NULL,
     estado ENUM('Activo', 'Bloqueado') NOT NULL
