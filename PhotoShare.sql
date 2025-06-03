@@ -1,5 +1,5 @@
-CREATE DATABASE PhotoShare;
-USE PhotoShare;
+﻿CREATE DATABASE IF NOT EXISTS photoshare;
+USE photoshare;
 
 -- Tabla Usuarios
 CREATE TABLE usuario (
@@ -8,13 +8,13 @@ CREATE TABLE usuario (
     apellidos VARCHAR(150) NOT NULL,
     nombre_usuario VARCHAR(50) NOT NULL UNIQUE,
     correo VARCHAR(100) NOT NULL UNIQUE,
-    contraseña VARCHAR(255) NOT NULL,
+    contrasena VARCHAR(255) NOT NULL,
     fecha_registro DATETIME NOT NULL,
     rol ENUM('Usuario', 'Administrador') NOT NULL,
     estado ENUM('Activo', 'Bloqueado') NOT NULL
 );
 
--- Tabla Fotografías
+-- Tabla Fotografias
 CREATE TABLE fotografia (
     id_foto INT AUTO_INCREMENT PRIMARY KEY,
     id_usuario INT NOT NULL,
@@ -53,7 +53,7 @@ CREATE TABLE mensaje (
     id_destinatario INT NOT NULL,
     contenido TEXT NOT NULL,
     fecha_envio DATETIME NOT NULL,
-    estado ENUM('Visto', 'No visto') NOT NULL,
+    estado ENUM('Visto', 'No_visto') NOT NULL,
     FOREIGN KEY (id_remitente) REFERENCES usuario(id_usuario),
     FOREIGN KEY (id_destinatario) REFERENCES usuario(id_usuario)
 );
@@ -87,7 +87,7 @@ CREATE TABLE notificacion (
     id_notificacion INT AUTO_INCREMENT PRIMARY KEY,
     id_usuario INT NOT NULL,
     tipo VARCHAR(100) NOT NULL,
-    estado ENUM('Leído', 'No leído') NOT NULL,
+    estado ENUM('Leido', 'No_leido') NOT NULL,
     fecha_envio DATETIME NOT NULL,
     FOREIGN KEY (id_usuario) REFERENCES usuario(id_usuario)
 );

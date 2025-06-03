@@ -11,7 +11,7 @@ services:
     depends_on:
       - backend
     environment:
-      - VITE_API_URL=http://localhost/api
+      - VITE_API_URL=http://backend:8080/api
     networks:
       - photoshare-network
 
@@ -36,12 +36,13 @@ services:
   db:
     image: mysql:8.0
     ports:
-      - "3306:3306"
+      - "3310:3306"
     environment:
       - MYSQL_ROOT_PASSWORD=password
       - MYSQL_DATABASE=photoshare
     volumes:
       - mysql-data:/var/lib/mysql
+      - ./PhotoShare.sql:/docker-entrypoint-initdb.d/PhotoShare.sql
     networks:
       - photoshare-network
 
