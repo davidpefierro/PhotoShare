@@ -1,4 +1,4 @@
-package com.photoshare.config;
+package com.photoshare.app.config;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
