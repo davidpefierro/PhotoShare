@@ -1,17 +1,17 @@
 version: '3.8'
 
 services:
-  # Frontend
-  frontend:
-    build:
-      context: ./
-      dockerfile: frontend.Dockerfile
+  # Database
+  db:
+    image: mysql:8.0
     ports:
-      - "3000:80"
-    depends_on:
-      - backend
+      - "3306:3306"
     environment:
-      - VITE_API_URL=http://backend:8080/api
+      - MYSQL_ROOT_PASSWORD=password
+      - MYSQL_DATABASE=photoshare
+    volumes:
+      - mysql-data:/var/lib/mysql
+      - ./PhotoShare.sql:/docker-entrypoint-initdb.d/PhotoShare.sql
     networks:
       - photoshare-network
 
@@ -32,17 +32,17 @@ services:
     networks:
       - photoshare-network
 
-  # Database
-  db:
-    image: mysql:8.0
+  # Frontend
+  frontend:
+    build:
+      context: ./
+      dockerfile: frontend.Dockerfile
     ports:
-      - "3310:3306"
+      - "3000:80"
+    depends_on:
+      - backend
     environment:
-      - MYSQL_ROOT_PASSWORD=password
-      - MYSQL_DATABASE=photoshare
-    volumes:
-      - mysql-data:/var/lib/mysql
-      - ./PhotoShare.sql:/docker-entrypoint-initdb.d/PhotoShare.sql
+      - VITE_API_URL=http://localhost/api
     networks:
       - photoshare-network
 
