@@ -1,8 +1,7 @@
 import axios from 'axios';
 import { useAuthStore } from '../stores/authStore';
 
-const API_URL =
-  import.meta.env.VITE_API_URL || 'https://photosharealmudeyne.netlify.app/api';
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost/api';
 
 const api = axios.create({
   baseURL: API_URL,
@@ -11,7 +10,7 @@ const api = axios.create({
   },
 });
 
-// Request interceptor for adding auth token
+// Interceptor para añadir el token de autenticación
 api.interceptors.request.use(
   (config) => {
     const token = useAuthStore.getState().user?.token;
@@ -25,13 +24,16 @@ api.interceptors.request.use(
   }
 );
 
-// Response interceptor for handling token expiry
+// Interceptor para manejar errores de token expirado
 api.interceptors.response.use(
   (response) => {
     return response;
   },
   (error) => {
-    if (error.response && error.response.status === 401) {
+    if (error.response?.data?.message) {
+      console.error('Error de API:', error.response.data.message);
+    }
+    if (error.response?.status === 401) {
       useAuthStore.getState().logout();
       window.location.href = '/login';
     }
