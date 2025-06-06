@@ -2,7 +2,7 @@
 
 ## Proyecto Integrado DAW
 
-**PhotoShare** es una plataforma desarrollada como proyecto integrado del ciclo Superior de Desarrollo de Aplicaciones Web (DAW) por David Peña Fierro y Manuel Gómez Páez.
+**PhotoShare** es una plataforma desarrollada como proyecto integrado del ciclo formativo de Desarrollo de Aplicaciones Web (DAW) por David Peña Fierro y Manuel Gómez Páez.
 
 ---
 
