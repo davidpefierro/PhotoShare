@@ -7,7 +7,7 @@ services:
       context: ./
       dockerfile: frontend.Dockerfile
     ports:
-      - "3000:80"
+      - "80:80"
     depends_on:
       - backend
     environment:
@@ -29,10 +29,13 @@ services:
       - SPRING_DATASOURCE_USERNAME=root
       - SPRING_DATASOURCE_PASSWORD=password
       - SPRING_JPA_HIBERNATE_DDL_AUTO=update
+      - FILE_UPLOAD_DIR=/app/uploads
+    volumes:
+      - photo-uploads:/app/uploads
     networks:
       - photoshare-network
 
-  # Database
+  # Base de datos
   db:
     image: mysql:8.0
     ports:
@@ -52,3 +55,4 @@ networks:
 
 volumes:
   mysql-data:
+  photo-uploads:
