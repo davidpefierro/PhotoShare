@@ -5,13 +5,18 @@ import { messageService } from '../../services/messageService';
 import { Camera, Heart, MessageCircle, User, LogOut, Settings, Bell, Menu, X } from 'lucide-react';
 import Button from '../ui/Button';
 
+// Función utilitaria para proteger el acceso a charAt
+function getFirstLetter(str?: string) {
+  return typeof str === "string" && str.length > 0 ? str.charAt(0).toUpperCase() : "?";
+}
+
 const Navbar = () => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [unreadMessages, setUnreadMessages] = useState(0);
   const { isAuthenticated, user, logout } = useAuthStore();
   const navigate = useNavigate();
   const location = useLocation();
-  
+
   useEffect(() => {
     const fetchUnreadCount = async () => {
       if (isAuthenticated) {
@@ -21,23 +26,23 @@ const Navbar = () => {
         }
       }
     };
-    
+
     fetchUnreadCount();
     // Consultar nuevos mensajes cada 30 segundos
     const interval = setInterval(fetchUnreadCount, 30000);
-    
+
     return () => clearInterval(interval);
   }, [isAuthenticated]);
-  
+
   const handleLogout = () => {
     logout();
     navigate('/login');
   };
-  
+
   const closeMobileMenu = () => {
     setMobileMenuOpen(false);
   };
-  
+
   return (
     <nav className="bg-white shadow-sm">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -48,7 +53,7 @@ const Navbar = () => {
               <span className="ml-2 text-xl font-bold text-gray-900">PhotoShare</span>
             </Link>
           </div>
-          
+
           <div className="hidden sm:ml-6 sm:flex sm:items-center sm:space-x-4">
             {isAuthenticated ? (
               <>
@@ -98,7 +103,7 @@ const Navbar = () => {
                       className="flex items-center text-sm font-medium text-gray-700 hover:text-primary-600"
                     >
                       <div className="h-8 w-8 rounded-full bg-primary-200 flex items-center justify-center text-primary-700">
-                        {user?.username.charAt(0).toUpperCase()}
+                        {getFirstLetter(user?.username)}
                       </div>
                     </Link>
                     <button
@@ -125,7 +130,7 @@ const Navbar = () => {
               </>
             )}
           </div>
-          
+
           <div className="flex items-center sm:hidden">
             <button
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
@@ -136,7 +141,7 @@ const Navbar = () => {
           </div>
         </div>
       </div>
-      
+
       {/* Menú móvil */}
       {mobileMenuOpen && (
         <div className="sm:hidden bg-white border-t border-gray-200">

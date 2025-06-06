@@ -1,6 +1,42 @@
 version: '3.8'
 
 services:
+  # Base de datos
+  db:
+    image: mysql:8.0
+    ports:
+      - "3310:3306"
+    environment:
+      - MYSQL_ROOT_PASSWORD=password
+      - MYSQL_DATABASE=photoshare
+    volumes:
+      - mysql-data:/var/lib/mysql
+      - ./PhotoShare.sql:/docker-entrypoint-initdb.d/PhotoShare.sql
+    networks:
+      - photoshare-network
+
+  # Backend
+  backend:
+    build:
+      context: ./backend
+      dockerfile: backend.Dockerfile
+    ports:
+      - "8080:8080"
+    depends_on:
+      - db
+    environment:
+      - SPRING_DATASOURCE_URL=jdbc:mysql://db:3306/photoshare?useSSL=false&allowPublicKeyRetrieval=true
+      - SPRING_DATASOURCE_USERNAME=root
+      - SPRING_DATASOURCE_PASSWORD=password
+      - SPRING_JPA_HIBERNATE_DDL_AUTO=update
+      - FILE_UPLOAD_DIR=/app/uploads
+      - JWT_SECRET=XyVbE7p9z3SwQ1t6LmR2KsGnT9YlMvRwU6PqZxNcBvHsJkLpQ
+      - JWT_EXPIRATION=86400000
+    volumes:
+      - photo-uploads:/app/uploads
+    networks:
+      - photoshare-network
+
   # Frontend
   frontend:
     build:
@@ -15,41 +51,6 @@ services:
     networks:
       - photoshare-network
 
-  # Backend
-  backend:
-    build:
-      context: ./backend
-      dockerfile: Dockerfile
-    ports:
-      - "8080:8080"
-    depends_on:
-      - db
-    environment:
-      - SPRING_DATASOURCE_URL=jdbc:mysql://db:3306/photoshare?useSSL=false&allowPublicKeyRetrieval=true
-      - SPRING_DATASOURCE_USERNAME=root
-      - SPRING_DATASOURCE_PASSWORD=password
-      - SPRING_JPA_HIBERNATE_DDL_AUTO=update
-      - FILE_UPLOAD_DIR=/app/uploads
-      - JWT_SECRET=mySuperSecretKey123!456@789#
-      - JWT_EXPIRATION=86400000
-    volumes:
-      - photo-uploads:/app/uploads
-    networks:
-      - photoshare-network
-
-  # Base de datos
-  db:
-    image: mysql:8.0
-    ports:
-      - "3306:3306"
-    environment:
-      - MYSQL_ROOT_PASSWORD=password
-      - MYSQL_DATABASE=photoshare
-    volumes:
-      - mysql-data:/var/lib/mysql
-      - ./PhotoShare.sql:/docker-entrypoint-initdb.d/PhotoShare.sql
-    networks:
-      - photoshare-network
 
 networks:
   photoshare-network:

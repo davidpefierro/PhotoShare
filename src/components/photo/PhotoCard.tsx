@@ -21,28 +21,28 @@ const PhotoCard: React.FC<PhotoCardProps> = ({ photo, onLike, onDelete }) => {
   const { user, isAuthenticated } = useAuthStore();
   const toggleLike = usePhotoStore((state) => state.toggleLike);
   const isOwnPhoto = user?.id === photo.userId;
-  
+
   const handleLike = () => {
     if (!isAuthenticated) {
       return;
     }
-    
+
     toggleLike(photo.id);
     if (onLike) {
       onLike(photo.id);
     }
   };
-  
+
   const handleDelete = async () => {
     if (!isAuthenticated || !isOwnPhoto) return;
-    
+
     const confirmDelete = window.confirm('¿Estás seguro de que quieres eliminar esta foto?');
     if (!confirmDelete) return;
-    
+
     setIsDeleting(true);
     try {
       const response = await photoService.deletePhoto(photo.id);
-      
+
       if (response.success) {
         if (onDelete) {
           onDelete(photo.id);
@@ -56,22 +56,30 @@ const PhotoCard: React.FC<PhotoCardProps> = ({ photo, onLike, onDelete }) => {
       setIsDeleting(false);
     }
   };
-  
+
+  // Arreglo robusto: proteger el acceso a charAt
+  const avatarLetter =
+    typeof photo.username === 'string' && photo.username.length > 0
+      ? photo.username.charAt(0).toUpperCase()
+      : '?';
+
   return (
     <div className="bg-white rounded-lg shadow-md overflow-hidden animate-fade-in">
       <div className="p-4 flex items-center">
         <Link to={`/profile/${photo.userId}`} className="flex items-center">
           <div className="h-10 w-10 rounded-full bg-primary-200 flex items-center justify-center text-primary-700">
-            {photo.username.charAt(0).toUpperCase()}
+            {avatarLetter}
           </div>
           <div className="ml-3">
-            <p className="text-sm font-medium text-gray-900">{photo.username}</p>
+            <p className="text-sm font-medium text-gray-900">{photo.username || 'Usuario'}</p>
             <p className="text-xs text-gray-500">
-              {formatDistanceToNow(new Date(photo.datePosted), { addSuffix: true, locale: es })}
+              {photo.datePosted
+                ? formatDistanceToNow(new Date(photo.datePosted), { addSuffix: true, locale: es })
+                : ''}
             </p>
           </div>
         </Link>
-        
+
         <div className="ml-auto relative">
           <button
             onClick={() => setShowActions(!showActions)}
@@ -79,7 +87,7 @@ const PhotoCard: React.FC<PhotoCardProps> = ({ photo, onLike, onDelete }) => {
           >
             <MoreHorizontal className="h-5 w-5" />
           </button>
-          
+
           {showActions && (
             <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1 z-10 ring-1 ring-black ring-opacity-5">
               {isOwnPhoto && (
@@ -107,16 +115,16 @@ const PhotoCard: React.FC<PhotoCardProps> = ({ photo, onLike, onDelete }) => {
           )}
         </div>
       </div>
-      
+
       <Link to={`/photos/${photo.id}`}>
         <img
           src={photo.url}
-          alt={photo.description}
+          alt={photo.description || 'Foto'}
           className="w-full object-cover h-64 sm:h-96"
           loading="lazy"
         />
       </Link>
-      
+
       <div className="p-4">
         <div className="flex items-center">
           <button
@@ -128,7 +136,7 @@ const PhotoCard: React.FC<PhotoCardProps> = ({ photo, onLike, onDelete }) => {
             <Heart className={`h-5 w-5 ${photo.userLiked ? 'fill-current' : ''}`} />
             <span className="ml-1 text-sm">{photo.likesCount}</span>
           </button>
-          
+
           <Link
             to={`/photos/${photo.id}`}
             className="flex items-center text-gray-500 hover:text-primary-500"
@@ -137,7 +145,7 @@ const PhotoCard: React.FC<PhotoCardProps> = ({ photo, onLike, onDelete }) => {
             <span className="ml-1 text-sm">{photo.commentsCount}</span>
           </Link>
         </div>
-        
+
         {photo.description && (
           <p className="mt-3 text-sm text-gray-700">{photo.description}</p>
         )}
