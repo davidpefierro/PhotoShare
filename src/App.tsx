@@ -8,6 +8,10 @@ import Home from './pages/Home';
 import Login from './pages/Login';
 import Register from './pages/Register';
 import Upload from './pages/Upload';
+import MessagesPage from "./pages/MessagesPage";
+import ConversationPage from "./pages/ConversationPage";
+import AdminUsersPage from "./pages/AdminUsersPage";
+import ProtectedAdminRoute from "./components/ProtectedAdminRoute";
 
 // Protected route component
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
@@ -42,6 +46,15 @@ function App() {
         <Navbar />
         <main className="flex-grow">
           <Routes>
+            {/* Admin */}
+              <Route
+    path="/admin/users"
+    element={
+      <ProtectedAdminRoute>
+        <AdminUsersPage />
+      </ProtectedAdminRoute>
+    }
+  />
             {/* Public routes */}
             <Route path="/" element={<Home />} />
             <Route path="/login" element={<Login />} />
@@ -56,7 +69,23 @@ function App() {
                 </ProtectedRoute>
               } 
             />
-            
+            <Route
+              path="/messages"
+              element={
+                <ProtectedRoute>
+                  <MessagesPage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/mensajes/:idUsuario"
+              element={
+                <ProtectedRoute>
+                  <ConversationPage />
+                </ProtectedRoute>
+              }
+            />
+
             {/* Fallback route */}
             <Route path="*" element={<Navigate to="/" />} />
           </Routes>

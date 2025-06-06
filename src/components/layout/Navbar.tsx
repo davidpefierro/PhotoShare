@@ -6,7 +6,7 @@ import { Camera, Heart, MessageCircle, User, LogOut, Settings, Bell, Menu, X } f
 import Button from '../ui/Button';
 
 // Función utilitaria para proteger el acceso a charAt
-function getFirstLetter(str?: string) {
+function getFirstLetter(str) {
   return typeof str === "string" && str.length > 0 ? str.charAt(0).toUpperCase() : "?";
 }
 
@@ -90,29 +90,38 @@ const Navbar = () => {
                     )}
                   </Link>
                 </div>
-                <div className="relative ml-3">
-                  <div className="flex items-center space-x-3">
+                <div className="relative ml-3 flex items-center space-x-3">
+                  {/* Botón solo para administradores */}
+                  {user?.rol === "Administrador" && (
                     <Link
-                      to="/notifications"
-                      className="text-gray-700 hover:text-primary-600"
+                      to="/admin/users"
+                      className="text-gray-700 hover:text-primary-600 px-3 py-2 rounded-md text-sm font-medium flex items-center gap-1"
+                      title="Administrar usuarios"
                     >
-                      <Bell className="h-5 w-5" />
+                      <User className="h-5 w-5" />
+                      Admin
                     </Link>
-                    <Link
-                      to={`/profile/${user?.id}`}
-                      className="flex items-center text-sm font-medium text-gray-700 hover:text-primary-600"
-                    >
-                      <div className="h-8 w-8 rounded-full bg-primary-200 flex items-center justify-center text-primary-700">
-                        {getFirstLetter(user?.username)}
-                      </div>
-                    </Link>
-                    <button
-                      onClick={handleLogout}
-                      className="text-gray-700 hover:text-red-600"
-                    >
-                      <LogOut className="h-5 w-5" />
-                    </button>
-                  </div>
+                  )}
+                  <Link
+                    to="/notifications"
+                    className="text-gray-700 hover:text-primary-600"
+                  >
+                    <Bell className="h-5 w-5" />
+                  </Link>
+                  <Link
+                    to={`/profile/${user?.id}`}
+                    className="flex items-center text-sm font-medium text-gray-700 hover:text-primary-600"
+                  >
+                    <div className="h-8 w-8 rounded-full bg-primary-200 flex items-center justify-center text-primary-700">
+                      {getFirstLetter(user?.username)}
+                    </div>
+                  </Link>
+                  <button
+                    onClick={handleLogout}
+                    className="text-gray-700 hover:text-red-600"
+                  >
+                    <LogOut className="h-5 w-5" />
+                  </button>
                 </div>
               </>
             ) : (
@@ -174,6 +183,16 @@ const Navbar = () => {
                     </span>
                   )}
                 </Link>
+                {/* Botón solo para administradores en menú móvil */}
+                {user?.rol === "Administrador" && (
+                  <Link
+                    to="/admin/users"
+                    className="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-primary-600 hover:bg-gray-50"
+                    onClick={closeMobileMenu}
+                  >
+                    Admin
+                  </Link>
+                )}
                 <Link
                   to="/notifications"
                   className="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-primary-600 hover:bg-gray-50"
