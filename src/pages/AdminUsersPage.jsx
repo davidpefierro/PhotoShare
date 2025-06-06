@@ -1,11 +1,29 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
+import axios from 'axios';
 
 export default function AdminUsersPage() {
-  // Ejemplo de datos de usuarios
-  const usuarios = [
-    { id: 1, nombre: 'María', usuario: 'maria23', email: 'maria@example.com', rol: 'usuario' },
-    { id: 2, nombre: 'Carlos', usuario: 'carlos_dev', email: 'carlos@example.com', rol: 'admin' },
-  ];
+  const [usuarios, setUsuarios] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    axios.get('/api/usuarios')
+      .then(response => {
+        setUsuarios(response.data);
+        setLoading(false);
+      })
+      .catch(error => {
+        console.error('Error al obtener usuarios:', error);
+        setLoading(false);
+      });
+  }, []);
+
+  if (loading) {
+    return (
+      <div className="min-h-screen p-6 bg-gray-100 flex items-center justify-center">
+        Cargando usuarios...
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen p-6 bg-gray-100">
@@ -24,11 +42,11 @@ export default function AdminUsersPage() {
           </thead>
           <tbody>
             {usuarios.map((u) => (
-              <tr key={u.id}>
-                <td className="border-t px-4 py-2">{u.id}</td>
-                <td className="border-t px-4 py-2">{u.nombre}</td>
-                <td className="border-t px-4 py-2">{u.usuario}</td>
-                <td className="border-t px-4 py-2">{u.email}</td>
+              <tr key={u.idUsuario}>
+                <td className="border-t px-4 py-2">{u.idUsuario}</td>
+                <td className="border-t px-4 py-2">{u.nombre} {u.apellidos}</td>
+                <td className="border-t px-4 py-2">{u.nombreUsuario}</td>
+                <td className="border-t px-4 py-2">{u.correo}</td>
                 <td className="border-t px-4 py-2">{u.rol}</td>
                 <td className="border-t px-4 py-2">
                   <button className="bg-yellow-500 text-white px-2 py-1 mr-2 rounded hover:bg-yellow-600">Editar</button>
