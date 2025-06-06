@@ -1,9 +1,11 @@
+version: '3.8'
+
 services:
-  # Database
+  # Base de datos
   db:
     image: mysql:8.0
     ports:
-      - "3306:3306"
+      - "3310:3306"
     environment:
       - MYSQL_ROOT_PASSWORD=password
       - MYSQL_DATABASE=photoshare
@@ -27,6 +29,11 @@ services:
       - SPRING_DATASOURCE_USERNAME=root
       - SPRING_DATASOURCE_PASSWORD=password
       - SPRING_JPA_HIBERNATE_DDL_AUTO=update
+      - FILE_UPLOAD_DIR=/app/uploads
+      - JWT_SECRET=mySuperSecretKey123!456@789#
+      - JWT_EXPIRATION=86400000
+    volumes:
+      - photo-uploads:/app/uploads
     networks:
       - photoshare-network
 
@@ -36,13 +43,14 @@ services:
       context: ./
       dockerfile: frontend.Dockerfile
     ports:
-      - "3000:80"
+      - "80:80"
     depends_on:
       - backend
     environment:
-      - VITE_API_URL=http://localhost:8080/api
+      - VITE_API_URL=http://localhost/api
     networks:
       - photoshare-network
+
 
 networks:
   photoshare-network:
@@ -50,3 +58,4 @@ networks:
 
 volumes:
   mysql-data:
+  photo-uploads:
