@@ -15,16 +15,16 @@ export interface AuthUser extends User {
 }
 
 export interface LoginRequest {
-  email: string;
-  password: string;
+  nombreUsuario: string;
+  contrasena: string;
 }
 
 export interface RegisterRequest {
-  name: string;
-  lastname: string;
-  username: string;
-  email: string;
-  password: string;
+  nombre: string;
+  apellidos: string;
+  nombreUsuario: string;
+  correo: string;
+  contrasena: string;
 }
 
 // Photo related types

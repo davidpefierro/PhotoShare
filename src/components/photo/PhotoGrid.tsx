@@ -6,17 +6,17 @@ import { Camera } from 'lucide-react';
 
 const PhotoGrid = () => {
   const { photos, loading, hasMore, fetchPhotos, removePhoto } = usePhotoStore();
-  
+
   useEffect(() => {
     if (photos.length === 0) {
       fetchPhotos();
     }
   }, [fetchPhotos, photos.length]);
-  
+
   const handleDeletePhoto = (photoId: number) => {
     removePhoto(photoId);
   };
-  
+
   if (loading && photos.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center py-12">
@@ -27,7 +27,7 @@ const PhotoGrid = () => {
       </div>
     );
   }
-  
+
   if (!loading && photos.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center py-12">
@@ -37,7 +37,7 @@ const PhotoGrid = () => {
       </div>
     );
   }
-  
+
   return (
     <InfiniteScroll
       dataLength={photos.length}

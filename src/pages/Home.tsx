@@ -1,19 +1,17 @@
 import { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuthStore } from '../stores/authStore';
-import { Camera, Users, MessageCircle, Heart } from 'lucide-react';
+import { Camera, Users, Heart } from 'lucide-react';
 import Button from '../components/ui/Button';
 import PhotoGrid from '../components/photo/PhotoGrid';
 
 const Home = () => {
   const { isAuthenticated } = useAuthStore();
   const navigate = useNavigate();
-  
-  useEffect(() => {
-    // Si el usuario ya está conectado, podríamos redirigirlo a su feed
-    // o mantenerlo aquí para ver la página de inicio pública
-  }, [isAuthenticated]);
-  
+
+  // Ya no necesitas manejar el fetch de posts aquí si PhotoGrid lo hace,
+  // pero puedes mostrar mensajes globales si gustas
+
   const handleGetStarted = () => {
     if (isAuthenticated) {
       navigate('/upload');
@@ -21,7 +19,7 @@ const Home = () => {
       navigate('/register');
     }
   };
-  
+
   if (isAuthenticated) {
     return (
       <div className="container mx-auto px-4 py-8">
@@ -31,7 +29,7 @@ const Home = () => {
       </div>
     );
   }
-  
+
   return (
     <div>
       {/* Sección Hero */}

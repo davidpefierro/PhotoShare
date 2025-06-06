@@ -4,7 +4,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { authService } from '../services/authService';
 import { useAuthStore } from '../stores/authStore';
 import { LoginRequest } from '../types';
-import { Camera, Lock, Mail, Eye, EyeOff } from 'lucide-react';
+import { Camera, Lock, User, Eye, EyeOff } from 'lucide-react';
 import Button from '../components/ui/Button';
 import Input from '../components/ui/Input';
 
@@ -14,29 +14,19 @@ const Login = () => {
   const [showPassword, setShowPassword] = useState(false);
   const navigate = useNavigate();
   const { login } = useAuthStore();
-  
-  const {
-    register,
-    handleSubmit,
-    formState: { errors },
-  } = useForm<LoginRequest>();
-  
+
+  const { register, handleSubmit, formState: { errors } } = useForm<LoginRequest>();
+
   const onSubmit = async (data: LoginRequest) => {
     setIsLoading(true);
     setError(null);
-    
     try {
       const response = await authService.login(data);
-      
       if (response.success && response.data) {
         login(response.data);
         navigate('/');
       } else {
-        if (response.message?.includes('Invalid login credentials')) {
-          setError('El correo electrónico o la contraseña son incorrectos. Por favor, inténtalo de nuevo.');
-        } else {
-          setError(response.message || 'Error al iniciar sesión. Por favor, verifica tus credenciales.');
-        }
+        setError(response.message || 'Error al iniciar sesión. Por favor, verifica tus credenciales.');
       }
     } catch (err) {
       setError('Ha ocurrido un error inesperado. Por favor, inténtalo más tarde.');
@@ -45,10 +35,8 @@ const Login = () => {
     }
   };
 
-  const togglePasswordVisibility = () => {
-    setShowPassword(!showPassword);
-  };
-  
+  const togglePasswordVisibility = () => setShowPassword(!showPassword);
+
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col justify-center py-12 sm:px-6 lg:px-8">
       <div className="sm:mx-auto sm:w-full sm:max-w-md">
@@ -65,7 +53,7 @@ const Login = () => {
           </Link>
         </p>
       </div>
-      
+
       <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
         <div className="bg-white py-8 px-4 shadow sm:rounded-lg sm:px-10">
           {error && (
@@ -77,37 +65,33 @@ const Login = () => {
               </div>
             </div>
           )}
-          
+
           <form className="space-y-6" onSubmit={handleSubmit(onSubmit)}>
             <div>
               <Input
-                id="email"
-                label="Correo electrónico"
-                type="email"
-                autoComplete="email"
-                leftIcon={<Mail className="h-5 w-5" />}
-                error={errors.email?.message}
+                id="nombreUsuario"
+                label="Nombre de usuario"
+                type="text"
+                autoComplete="username"
+                leftIcon={<User className="h-5 w-5" />}
+                error={errors.nombreUsuario?.message}
                 fullWidth
-                {...register('email', {
-                  required: 'El correo electrónico es obligatorio',
-                  pattern: {
-                    value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
-                    message: 'Por favor, introduce un correo electrónico válido',
-                  },
+                {...register('nombreUsuario', {
+                  required: 'El nombre de usuario es obligatorio',
                 })}
               />
             </div>
-            
+
             <div className="relative">
               <Input
-                id="password"
+                id="contrasena"
                 label="Contraseña"
                 type={showPassword ? 'text' : 'password'}
                 autoComplete="current-password"
                 leftIcon={<Lock className="h-5 w-5" />}
-                error={errors.password?.message}
+                error={errors.contrasena?.message}
                 fullWidth
-                {...register('password', {
+                {...register('contrasena', {
                   required: 'La contraseña es obligatoria',
                   minLength: {
                     value: 6,
@@ -127,7 +111,7 @@ const Login = () => {
                 )}
               </button>
             </div>
-            
+
             <div className="flex items-center justify-between">
               <div className="flex items-center">
                 <input
@@ -140,14 +124,13 @@ const Login = () => {
                   Recordarme
                 </label>
               </div>
-              
               <div className="text-sm">
                 <Link to="/forgot-password" className="font-medium text-primary-600 hover:text-primary-500">
                   ¿Olvidaste tu contraseña?
                 </Link>
               </div>
             </div>
-            
+
             <div>
               <Button
                 type="submit"
@@ -173,5 +156,4 @@ const Login = () => {
     </div>
   );
 };
-
 export default Login;
