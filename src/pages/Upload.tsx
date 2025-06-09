@@ -13,7 +13,7 @@ const UploadPage = () => {
   const [isUploading, setIsUploading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const navigate = useNavigate();
-  const { isAuthenticated } = useAuthStore();
+  const { isAuthenticated, user } = useAuthStore(); // <-- AÑADIDO user
 
   const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -22,15 +22,15 @@ const UploadPage = () => {
         setError('El tamaño del archivo debe ser menor a 10MB');
         return;
       }
-      
+
       if (!file.type.startsWith('image/')) {
         setError('Por favor, selecciona un archivo de imagen');
         return;
       }
-      
+
       setSelectedFile(file);
       setError(null);
-      
+
       // Create preview
       const reader = new FileReader();
       reader.onloadend = () => {
@@ -50,22 +50,28 @@ const UploadPage = () => {
       setError('Por favor, añade una descripción');
       return;
     }
-
+console.log(user)
+    if (!user || !user.id) {
+      setError('No hay usuario autenticado');
+      return;
+    }
     setIsUploading(true);
     setError(null);
 
     try {
-      const response = await photoService.uploadPhoto({
+      const response = await photoService.subirFoto({
         imageFile: selectedFile,
-        description: description.trim()
+        description: description.trim(),
+        idUsuario: user.id // <-- PASA el id de usuario autenticado
       });
-
+      console.log(response)
       if (response.success && response.data) {
-        navigate(`/photos/${response.data.id}`);
+        navigate(`/fotografias/${response.data.id}`);
       } else {
         setError(response.message || 'Error al subir la foto');
       }
     } catch (err) {
+      alert(err)
       setError('Ha ocurrido un error inesperado');
     } finally {
       setIsUploading(false);
