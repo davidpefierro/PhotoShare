@@ -2,100 +2,101 @@ import api from './api';
 import { Photo, PhotoCreateRequest, PageResponse, ApiResponse } from '../types';
 
 export const photoService = {
-  getPhotos: async (page = 0, size = 10): Promise<ApiResponse<PageResponse<Photo>>> => {
+  obtenerFotos: async (pagina = 0, tamaño = 10): Promise<ApiResponse<PageResponse<Photo>>> => {
     try {
-      const response = await api.get<ApiResponse<PageResponse<Photo>>>('/photos', {
-        params: { page, size },
+      const respuesta = await api.get<ApiResponse<PageResponse<Photo>>>('/fotografias', {
+        params: { page: pagina, size: tamaño },
       });
-      return response.data;
+      return respuesta.data;
     } catch (error) {
       return {
         success: false,
-        message: 'Failed to fetch photos.',
+        message: 'No se pudieron obtener las fotos.',
       };
     }
   },
 
-  getUserPhotos: async (userId: number, page = 0, size = 10): Promise<ApiResponse<PageResponse<Photo>>> => {
+  obtenerFotosDeUsuario: async (idUsuario: number, pagina = 0, tamaño = 10): Promise<ApiResponse<PageResponse<Photo>>> => {
     try {
-      const response = await api.get<ApiResponse<PageResponse<Photo>>>(`/photos/user/${userId}`, {
-        params: { page, size },
+      const respuesta = await api.get<ApiResponse<PageResponse<Photo>>>(`/fotografias/user/${idUsuario}`, {
+        params: { page: pagina, size: tamaño },
       });
-      return response.data;
+      return respuesta.data;
     } catch (error) {
       return {
         success: false,
-        message: 'Failed to fetch user photos.',
+        message: 'No se pudieron obtener las fotos del usuario.',
       };
     }
   },
 
-  getPhoto: async (id: number): Promise<ApiResponse<Photo>> => {
+  obtenerFoto: async (id: number): Promise<ApiResponse<Photo>> => {
     try {
-      const response = await api.get<ApiResponse<Photo>>(`/photos/${id}`);
-      return response.data;
+      const respuesta = await api.get<ApiResponse<Photo>>(`/fotografias/${id}`);
+      return respuesta.data;
     } catch (error) {
       return {
         success: false,
-        message: 'Failed to fetch photo details.',
+        message: 'No se pudo obtener el detalle de la foto.',
       };
     }
   },
 
-  uploadPhoto: async (photoData: PhotoCreateRequest): Promise<ApiResponse<Photo>> => {
+  subirFoto: async (datosFoto: PhotoCreateRequest & { idUsuario: number }): Promise<ApiResponse<Photo>> => {
     try {
-      // Create form data for file upload
+      // Crear FormData para la subida del archivo
       const formData = new FormData();
-      formData.append('description', photoData.description);
-      formData.append('imageFile', photoData.imageFile);
+      formData.append('descripcion', datosFoto.description);
+      formData.append('imageFile', datosFoto.imageFile);
+      formData.append('idUsuario', datosFoto.idUsuario.toString());
 
-      const response = await api.post<ApiResponse<Photo>>('/photos', formData, {
+      const respuesta = await api.post<ApiResponse<Photo>>('/api/fotografias/upload', formData, {
         headers: {
           'Content-Type': 'multipart/form-data',
         },
       });
       
-      return response.data;
+      return respuesta.data;
     } catch (error) {
       return {
         success: false,
-        message: 'Failed to upload photo.',
+        message: 'No se pudo subir la foto.',
       };
     }
   },
 
-  deletePhoto: async (id: number): Promise<ApiResponse<null>> => {
+  eliminarFoto: async (id: number): Promise<ApiResponse<null>> => {
     try {
-      const response = await api.delete<ApiResponse<null>>(`/photos/${id}`);
-      return response.data;
+      const respuesta = await api.delete<ApiResponse<null>>(`/fotografias/${id}`);
+      return respuesta.data;
     } catch (error) {
       return {
         success: false,
-        message: 'Failed to delete photo.',
+        message: 'No se pudo eliminar la foto.',
       };
     }
   },
 
-  likePhoto: async (id: number): Promise<ApiResponse<{ liked: boolean }>> => {
+  darLikeAFoto: async (id: number): Promise<ApiResponse<{ liked: boolean }>> => {
     try {
-      const response = await api.post<ApiResponse<{ liked: boolean }>>(`/photos/${id}/like`);
-      return response.data;
+      const respuesta = await api.post<ApiResponse<{ liked: boolean }>>(`/fotografias/${id}/like`);
+      return respuesta.data;
     } catch (error) {
       return {
         success: false,
-        message: 'Failed to like photo.',
+        message: 'No se pudo dar like a la foto.',
       };
     }
   },
 
-  unlikePhoto: async (id: number): Promise<ApiResponse<{ liked: boolean }>> => {
+  quitarLikeAFoto: async (id: number): Promise<ApiResponse<{ liked: boolean }>> => {
     try {
-      const response = await api.delete<ApiResponse<{ liked: boolean }>>(`/photos/${id}/like`);
-      return response.data;
+      const respuesta = await api.delete<ApiResponse<{ liked: boolean }>>(`/fotografias/${id}/like`);
+      return respuesta.data;
     } catch (error) {
       return {
         success: false,
-        message: 'Failed to unlike photo.',
+        message: 'No se pudo quitar el like a la foto.',
       };
     }
   },

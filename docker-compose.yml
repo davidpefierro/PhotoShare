@@ -33,7 +33,7 @@ services:
       - JWT_SECRET=XyVbE7p9z3SwQ1t6LmR2KsGnT9YlMvRwU6PqZxNcBvHsJkLpQ
       - JWT_EXPIRATION=86400000
     volumes:
-      - photo-uploads:/app/uploads
+      - ./uploads:/app/uploads
     networks:
       - photoshare-network
 
