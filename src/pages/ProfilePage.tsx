@@ -10,16 +10,14 @@ type UsuarioDTO = {
   correo: string;
 };
 
-type Photo = {
-  id: number;
-  userId: number;
-  username: string;
+type Foto = {
+  idFoto: number;
   url: string;
-  description?: string;
-  datePosted: string;
-  likesCount: number;
-  commentsCount: number;
-  userLiked: boolean;
+  descripcion: string;
+  fechaPublicacion: string;
+  nombreUsuario: string;
+  idUsuario: number;
+  // Ajusta los campos extras si tu DTO los tiene
 };
 
 const ProfilePage: React.FC = () => {
@@ -28,10 +26,9 @@ const ProfilePage: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  const [photos, setPhotos] = useState<Photo[]>([]);
+  const [photos, setPhotos] = useState<Foto[]>([]);
   const [photosLoading, setPhotosLoading] = useState(true);
 
-  // Cargar datos del usuario
   useEffect(() => {
     if (!id) return;
     setLoading(true);
@@ -50,17 +47,23 @@ const ProfilePage: React.FC = () => {
       });
   }, [id]);
 
-  // Cargar fotos del usuario
   useEffect(() => {
     if (!id) return;
     setPhotosLoading(true);
-    fetch(`${process.env.REACT_APP_API_URL || ""}/api/fotos/usuario/${id}`)
+    fetch(`${process.env.REACT_APP_API_URL || ""}/api/fotografias/user/${id}`)
       .then((res) => {
         if (!res.ok) throw new Error("No se pudieron cargar las fotos");
         return res.json();
       })
       .then((data) => {
-        setPhotos(data);
+        // El backend retorna { content: [array de fotos], ... }
+        if (Array.isArray(data)) {
+          setPhotos(data);
+        } else if (Array.isArray(data.content)) {
+          setPhotos(data.content);
+        } else {
+          setPhotos([]);
+        }
         setPhotosLoading(false);
       })
       .catch(() => setPhotosLoading(false));
@@ -71,7 +74,7 @@ const ProfilePage: React.FC = () => {
   if (!user) return <div>No se encontró el usuario.</div>;
 
   return (
-    <div className="max-w-md mx-auto mt-8 p-6 bg-white rounded shadow">
+    <div className="w-full md:w-1/2 max-w-3xl mx-auto mt-8 p-6 bg-white rounded shadow">
       <div className="flex flex-col items-center">
         <div className="h-20 w-20 rounded-full bg-primary-200 flex items-center justify-center text-4xl text-primary-700 mb-4">
           {user.nombreUsuario.charAt(0).toUpperCase()}
@@ -81,16 +84,17 @@ const ProfilePage: React.FC = () => {
         <p className="text-gray-500">{user.correo}</p>
       </div>
 
-      <div className="mt-10">
-        <h3 className="text-xl font-semibold mb-4 text-center">Fotos subidas</h3>
+      {/* FOTOS DEL USUARIO */}
+      <div className="mt-8">
+        <h3 className="text-xl font-semibold mb-4">Fotos subidas</h3>
         {photosLoading ? (
           <div>Cargando fotos...</div>
         ) : photos.length === 0 ? (
-          <div className="text-gray-400 text-center">Este usuario no ha subido fotos aún.</div>
+          <div className="text-gray-500">Este usuario no ha subido fotos todavía.</div>
         ) : (
-          <div className="space-y-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {photos.map((photo) => (
-              <PhotoCard key={photo.id} photo={photo} />
+              <PhotoCard key={photo.idFoto} photo={photo} />
             ))}
           </div>
         )}
