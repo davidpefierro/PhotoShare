@@ -65,22 +65,20 @@ const Navbar = () => {
                 </Link>
                 <Link
                   to="/explore"
-                  className={`px-3 py-2 rounded-md text-sm font-medium ${
-                    location.pathname === '/explore'
-                      ? 'bg-primary-50 text-primary-600'
-                      : 'text-gray-700 hover:text-primary-600'
-                  }`}
+                  className={`px-3 py-2 rounded-md text-sm font-medium ${location.pathname === '/explore'
+                    ? 'bg-primary-50 text-primary-600'
+                    : 'text-gray-700 hover:text-primary-600'
+                    }`}
                 >
                   Explorar
                 </Link>
                 <div className="relative">
                   <Link
                     to="/messages"
-                    className={`px-3 py-2 rounded-md text-sm font-medium ${
-                      location.pathname === '/messages'
-                        ? 'bg-primary-50 text-primary-600'
-                        : 'text-gray-700 hover:text-primary-600'
-                    }`}
+                    className={`px-3 py-2 rounded-md text-sm font-medium ${location.pathname === '/messages'
+                      ? 'bg-primary-50 text-primary-600'
+                      : 'text-gray-700 hover:text-primary-600'
+                      }`}
                   >
                     <MessageCircle className="h-5 w-5 inline-block" />
                     {unreadMessages > 0 && (
@@ -109,7 +107,7 @@ const Navbar = () => {
                     <Bell className="h-5 w-5" />
                   </Link>
                   <Link
-                    to={`/profile/${user?.id}`}
+                    to={`/profile/${user?.idUsuario}`}
                     className="flex items-center text-sm font-medium text-gray-700 hover:text-primary-600"
                   >
                     <div className="h-8 w-8 rounded-full bg-primary-200 flex items-center justify-center text-primary-700">
@@ -201,7 +199,7 @@ const Navbar = () => {
                   Notificaciones
                 </Link>
                 <Link
-                  to={`/profile/${user?.id}`}
+                  to={`/profile/${user?.idUsuario}`}
                   className="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-primary-600 hover:bg-gray-50"
                   onClick={closeMobileMenu}
                 >

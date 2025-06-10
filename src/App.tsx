@@ -11,6 +11,7 @@ import Upload from './pages/Upload';
 import MessagesPage from "./pages/MessagesPage";
 import ConversationPage from "./pages/ConversationPage";
 import AdminUsersPage from "./pages/AdminUsersPage";
+import ProfilePage from './pages/ProfilePage';
 import ProtectedAdminRoute from "./components/ProtectedAdminRoute";
 
 // Protected route component
@@ -40,8 +41,6 @@ const AdminRoute = ({ children }: { children: React.ReactNode }) => {
 };
 
 function App() {
-
-
   return (
     <BrowserRouter>
       <div className="flex flex-col min-h-screen">
@@ -87,7 +86,14 @@ function App() {
                 </ProtectedRoute>
               }
             />
-
+            <Route
+              path="/profile/:id"
+              element={
+                <ProtectedRoute>
+                  <ProfilePage />
+                </ProtectedRoute>
+              }
+            />
             {/* Fallback route */}
             <Route path="*" element={<Navigate to="/" />} />
           </Routes>

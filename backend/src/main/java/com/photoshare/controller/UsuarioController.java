@@ -37,4 +37,9 @@ public class UsuarioController {
     usuarioService.actualizarUsuario(idUsuario, dto);
     return ResponseEntity.noContent().build();
   }
+
+  @GetMapping("/{idUsuario}")
+  public ResponseEntity<UsuarioDTO> obtenerUsuarioPorId(@PathVariable Long idUsuario) {
+    return ResponseEntity.ok(usuarioService.obtenerUsuarioPorId(idUsuario));
+  }
 }

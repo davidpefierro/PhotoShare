@@ -55,4 +55,10 @@ public class UsuarioService {
 
     usuarioRepository.save(usuario);
   }
+
+  public UsuarioDTO obtenerUsuarioPorId(Long id) {
+    Usuario usuario = usuarioRepository.findById(id)
+        .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Usuario no encontrado"));
+    return UsuarioDTO.fromEntity(usuario);
+  }
 }
