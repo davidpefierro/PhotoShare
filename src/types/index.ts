@@ -40,10 +40,11 @@ export interface Photo {
   userLiked: boolean;
 }
 
-export interface PhotoCreateRequest {
+export type PhotoCreateRequest = {
   description: string;
   imageFile: File;
-}
+  nombreUsuario: string;
+};
 
 // Comment related types
 export interface Comment {

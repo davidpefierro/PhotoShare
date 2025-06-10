@@ -2,20 +2,34 @@ import api from './api';
 import { Photo, PhotoCreateRequest, PageResponse, ApiResponse } from '../types';
 
 export const photoService = {
-  obtenerFotos: async (pagina = 0, tamaño = 10): Promise<ApiResponse<PageResponse<Photo>>> => {
-    try {
-      const respuesta = await api.get<ApiResponse<PageResponse<Photo>>>('/fotografias', {
-        params: { page: pagina, size: tamaño },
-      });
-      return respuesta.data;
-    } catch (error) {
+obtenerFotos: async (pagina = 0, tamaño = 10): Promise<ApiResponse<PageResponse<Photo>>> => {
+  try {
+    const respuesta = await api.get('/fotografias', {
+      params: { page: pagina, size: tamaño },
+    });
+    if (respuesta.data && Array.isArray(respuesta.data.content)) {
+      // Mapea los campos
+      const mapped = {
+        ...respuesta.data,
+        content: respuesta.data.content.map((foto: any) => ({
+          id: foto.idFoto,
+          userId: foto.idUsuario,
+          url: foto.url,
+          description: foto.descripcion,
+          datePosted: foto.fechaPublicacion,
+          // ...otros campos según tu modelo
+        })),
+      };
       return {
-        success: false,
-        message: 'No se pudieron obtener las fotos.',
+        success: true,
+        data: mapped,
       };
     }
-  },
-
+    return { success: false, message: 'Formato inesperado' };
+  } catch (error) {
+    return { success: false, message: 'No se pudieron obtener las fotos.' };
+  }
+},
   obtenerFotosDeUsuario: async (idUsuario: number, pagina = 0, tamaño = 10): Promise<ApiResponse<PageResponse<Photo>>> => {
     try {
       const respuesta = await api.get<ApiResponse<PageResponse<Photo>>>(`/fotografias/user/${idUsuario}`, {
@@ -48,13 +62,13 @@ export const photoService = {
       const formData = new FormData();
       formData.append('descripcion', datosFoto.description);
       formData.append('imageFile', datosFoto.imageFile);
-      formData.append('idUsuario', datosFoto.idUsuario.toString());
+      formData.append('nombreUsuario', datosFoto.nombreUsuario.toString());
 
-      const respuesta = await api.post<ApiResponse<Photo>>('/api/fotografias/upload', formData, {
-        headers: {
-          'Content-Type': 'multipart/form-data',
-        },
-      });
+   const respuesta = await api.post<ApiResponse<Photo>>('/fotografias/upload', formData, {
+  headers: {
+    'Content-Type': 'multipart/form-data',
+  },
+});
       
       return respuesta.data;
     } catch (error) {

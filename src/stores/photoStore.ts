@@ -29,9 +29,10 @@ export const usePhotoStore = create<PhotoState>()((set, get) => ({
       set({ loading: true, error: null });
       
       const page = refresh ? 0 : get().currentPage;
-      const response = await photoService.getPhotos(page);
-      
-      if (response.success && response.data) {
+      // Usa el método correcto y accede a la estructura correcta
+      const response = await photoService.obtenerFotos(page);
+
+      if (response.success && response.data && Array.isArray(response.data.content)) {
         const pageData = response.data;
         set((state) => ({
           photos: refresh ? pageData.content : [...state.photos, ...pageData.content],
@@ -40,7 +41,7 @@ export const usePhotoStore = create<PhotoState>()((set, get) => ({
           loading: false,
         }));
       } else {
-        set({ error: response.message, loading: false });
+        set({ error: response.message || 'No se pudieron obtener las fotos.', loading: false });
       }
     } catch (error) {
       set({ error: 'Failed to fetch photos', loading: false });

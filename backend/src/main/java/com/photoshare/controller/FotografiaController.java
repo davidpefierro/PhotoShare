@@ -1,6 +1,8 @@
 package com.photoshare.controller;
 
 import com.photoshare.model.Fotografia;
+import com.photoshare.model.Usuario;
+import com.photoshare.repository.UsuarioRepository;
 import com.photoshare.service.FotografiaService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
@@ -13,6 +15,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.LocalDateTime;
 import java.util.Map;
+import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/fotografias")
@@ -24,6 +27,9 @@ public class FotografiaController {
     @Autowired
     private FotografiaService fotografiaService;
 
+    @Autowired
+    private UsuarioRepository usuarioRepository;
+
     @GetMapping("")
     public ResponseEntity<?> listarPaginado(
             @RequestParam(defaultValue = "0") int page,
@@ -32,7 +38,7 @@ public class FotografiaController {
         return ResponseEntity.ok(fotografiaService.findAll(PageRequest.of(page, size)));
     }
 
-    // Listar fotos de un usuario
+    // Listar fotos de un usuario por ID
     @GetMapping("/user/{idUsuario}")
     public ResponseEntity<?> listarPorUsuario(
             @PathVariable Integer idUsuario,
@@ -50,14 +56,24 @@ public class FotografiaController {
                 .orElse(ResponseEntity.notFound().build());
     }
 
-    // Subir foto
-    @PostMapping("/upload")
+    // Subir foto usando nombreUsuario
+     @PostMapping("/upload")
     public ResponseEntity<?> uploadFotografia(
             @RequestParam("imageFile") MultipartFile imageFile,
             @RequestParam("descripcion") String descripcion,
-            @RequestParam("idUsuario") Integer idUsuario
+            @RequestParam("nombreUsuario") String nombreUsuario
     ) {
         try {
+            System.out.println("Intentando subir foto de usuario: " + nombreUsuario + " con descripción: " + descripcion);
+
+        Optional<Usuario> usuarioOpt = usuarioRepository.findByNombreUsuario(nombreUsuario);
+        if (usuarioOpt.isEmpty()) {
+            System.out.println("Usuario no encontrado: " + nombreUsuario);
+            return ResponseEntity.badRequest().body("Usuario no encontrado");
+        }
+        Usuario usuario = usuarioOpt.get();
+        Integer idUsuario = usuario.getIdUsuario().intValue();
+        System.out.println("ID del usuario encontrado: " + idUsuario);
             if (imageFile.isEmpty()) {
                 return ResponseEntity.badRequest().body("No se subió ninguna imagen");
             }
@@ -95,10 +111,11 @@ public class FotografiaController {
                     )
             );
         } catch (Exception e) {
-            e.printStackTrace();
-            return ResponseEntity.internalServerError().body(
-                    Map.of("success", false, "message", "Error al subir la foto")
-            );
+        System.out.println("Error real al subir la foto:");
+        e.printStackTrace();
+        return ResponseEntity.internalServerError().body(
+            Map.of("success", false, "message", "No se pudo subir la foto.")
+        );
         }
     }
 
@@ -116,7 +133,7 @@ public class FotografiaController {
         }
     }
 
-    // Dar like a foto (requiere lógica de base de datos para likes)
+    // Dar like a foto
     @PostMapping("/{id}/like")
     public ResponseEntity<?> darLike(
             @PathVariable Integer id,

@@ -12,6 +12,9 @@ RUN mvn dependency:go-offline -B
 COPY src ./src
 RUN mvn clean package -DskipTests
 
+# Crear carpeta de archivos
+RUN mkdir -p /app/uploads
+
 # Etapa de ejecución con solo el JRE
 FROM eclipse-temurin:17-jre-alpine
 

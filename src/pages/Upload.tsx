@@ -50,8 +50,7 @@ const UploadPage = () => {
       setError('Por favor, añade una descripción');
       return;
     }
-console.log(user)
-    if (!user || !user.id) {
+    if (!user || !user.nombreUsuario) {
       setError('No hay usuario autenticado');
       return;
     }
@@ -62,7 +61,7 @@ console.log(user)
       const response = await photoService.subirFoto({
         imageFile: selectedFile,
         description: description.trim(),
-        idUsuario: user.id // <-- PASA el id de usuario autenticado
+        nombreUsuario: user.nombreUsuario
       });
       console.log(response)
       if (response.success && response.data) {
