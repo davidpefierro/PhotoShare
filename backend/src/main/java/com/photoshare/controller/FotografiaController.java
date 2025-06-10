@@ -133,37 +133,24 @@ public class FotografiaController {
         }
     }
 
-    // Dar like a foto
     @PostMapping("/{id}/like")
-    public ResponseEntity<?> darLike(
-            @PathVariable Integer id,
-            @RequestParam("idUsuario") Integer idUsuario
-    ) {
-        try {
-            boolean liked = fotografiaService.likePhoto(id, idUsuario);
-            return ResponseEntity.ok(Map.of("success", true, "liked", liked));
-        } catch (Exception e) {
-            e.printStackTrace();
-            return ResponseEntity.internalServerError().body(
-                    Map.of("success", false, "message", "Error al dar like")
-            );
-        }
-    }
+public ResponseEntity<?> likeFoto(@PathVariable Integer id, @RequestParam Integer idUsuario) {
+    boolean liked = fotografiaService.likePhoto(id, idUsuario);
+    int count = fotografiaService.likesCount(id);
+    return ResponseEntity.ok(Map.of("liked", true, "likesCount", count));
+}
 
-    // Quitar like a foto
-    @DeleteMapping("/{id}/like")
-    public ResponseEntity<?> quitarLike(
-            @PathVariable Integer id,
-            @RequestParam("idUsuario") Integer idUsuario
-    ) {
-        try {
-            boolean liked = fotografiaService.unlikePhoto(id, idUsuario);
-            return ResponseEntity.ok(Map.of("success", true, "liked", liked));
-        } catch (Exception e) {
-            e.printStackTrace();
-            return ResponseEntity.internalServerError().body(
-                    Map.of("success", false, "message", "Error al quitar el like")
-            );
-        }
-    }
+@PostMapping("/{id}/unlike")
+public ResponseEntity<?> unlikeFoto(@PathVariable Integer id, @RequestParam Integer idUsuario) {
+    boolean unliked = fotografiaService.unlikePhoto(id, idUsuario);
+    int count = fotografiaService.likesCount(id);
+    return ResponseEntity.ok(Map.of("liked", false, "likesCount", count));
+}
+
+@GetMapping("/{id}/likes")
+public ResponseEntity<?> getLikes(@PathVariable Integer id, @RequestParam Integer idUsuario) {
+    boolean liked = fotografiaService.userLiked(id, idUsuario);
+    int count = fotografiaService.likesCount(id);
+    return ResponseEntity.ok(Map.of("liked", liked, "likesCount", count));
+}
 }

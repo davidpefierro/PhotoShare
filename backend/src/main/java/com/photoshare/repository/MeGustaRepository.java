@@ -6,4 +6,6 @@ import org.springframework.data.jpa.repository.JpaRepository;
 public interface MeGustaRepository extends JpaRepository<MeGusta, Integer> {
     boolean existsByIdFotoAndIdUsuario(Integer idFoto, Integer idUsuario);
     void deleteByIdFotoAndIdUsuario(Integer idFoto, Integer idUsuario);
+    int countByIdFoto(Integer idFoto);
+
 }

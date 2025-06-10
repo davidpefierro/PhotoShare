@@ -2,14 +2,18 @@ package com.photoshare.service;
 
 import com.photoshare.dto.FotografiaDTO;
 import com.photoshare.model.Fotografia;
+import com.photoshare.model.MeGusta;
 import com.photoshare.model.Usuario;
 import com.photoshare.repository.FotografiaRepository;
+import com.photoshare.repository.MeGustaRepository;
 import com.photoshare.repository.UsuarioRepository;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -19,6 +23,8 @@ public class FotografiaService {
 
     private final FotografiaRepository fotografiaRepository;
     private final UsuarioRepository usuarioRepository;
+ @Autowired
+private MeGustaRepository meGustaRepository;
 
     public FotografiaService(FotografiaRepository fotografiaRepository, UsuarioRepository usuarioRepository) {
         this.fotografiaRepository = fotografiaRepository;
@@ -86,15 +92,34 @@ public class FotografiaService {
         fotografiaRepository.deleteById(idFoto);
     }
 
-    // Dar like a una foto (requiere implementar la lógica en la tabla me_gusta)
-    public boolean likePhoto(Integer idFoto, Integer idUsuario) {
-        // Implementa la lógica para guardar en la tabla me_gusta si no existe
-        return true; // Placeholder
-    }
 
-    // Quitar like a una foto
-    public boolean unlikePhoto(Integer idFoto, Integer idUsuario) {
-        // Implementa la lógica para eliminar de la tabla me_gusta si existe
-        return false; // Placeholder
+// Dar like a una foto
+public boolean likePhoto(Integer idFoto, Integer idUsuario) {
+    if (!meGustaRepository.existsByIdFotoAndIdUsuario(idFoto, idUsuario)) {
+        MeGusta meGusta = new MeGusta(idUsuario, idFoto, LocalDateTime.now());
+        meGustaRepository.save(meGusta);
+        return true;
     }
+    return false;
+}
+
+// Quitar like a una foto
+public boolean unlikePhoto(Integer idFoto, Integer idUsuario) {
+    if (meGustaRepository.existsByIdFotoAndIdUsuario(idFoto, idUsuario)) {
+        meGustaRepository.deleteByIdFotoAndIdUsuario(idFoto, idUsuario);
+        return true;
+    }
+    return false;
+}
+
+// Saber si un usuario ha dado MG
+public boolean userLiked(Integer idFoto, Integer idUsuario) {
+    return meGustaRepository.existsByIdFotoAndIdUsuario(idFoto, idUsuario);
+}
+
+// Contar likes totales de una foto
+public int likesCount(Integer idFoto) {
+    return meGustaRepository.countByIdFoto(idFoto);
+}
+
 }
