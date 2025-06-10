@@ -16,9 +16,14 @@ public class UsuarioController {
 
   private final UsuarioService usuarioService;
 
+  // @GetMapping
+  // public ResponseEntity<List<UsuarioDTO>> obtenerTodos() {
+  // return ResponseEntity.ok(usuarioService.obtenerTodos());
+  // }
+
   @GetMapping
-  public ResponseEntity<List<UsuarioDTO>> obtenerTodos() {
-    return ResponseEntity.ok(usuarioService.obtenerTodos());
+  public ResponseEntity<List<UsuarioDTO>> obtenerTodos(@RequestParam Long idActual) {
+    return ResponseEntity.ok(usuarioService.obtenerTodosExcluyendo(idActual));
   }
 
   @DeleteMapping("/{idUsuario}")
@@ -27,15 +32,9 @@ public class UsuarioController {
     return ResponseEntity.noContent().build();
   }
 
-  @PutMapping("/{idUsuario}/rol")
-  public ResponseEntity<Void> actualizarRol(@PathVariable Long idUsuario, @RequestBody String nuevoRol) {
-    usuarioService.actualizarRol(idUsuario, nuevoRol);
-    return ResponseEntity.noContent().build();
-  }
-
-  @PutMapping("/{idUsuario}/estado")
-  public ResponseEntity<Void> actualizarEstado(@PathVariable Long idUsuario, @RequestBody String nuevoEstado) {
-    usuarioService.actualizarEstado(idUsuario, nuevoEstado);
+  @PutMapping("/{idUsuario}")
+  public ResponseEntity<Void> actualizarUsuario(@PathVariable Long idUsuario, @RequestBody UsuarioDTO dto) {
+    usuarioService.actualizarUsuario(idUsuario, dto);
     return ResponseEntity.noContent().build();
   }
 }

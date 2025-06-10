@@ -17,8 +17,15 @@ public class UsuarioService {
 
   private final UsuarioRepository usuarioRepository;
 
-  public List<UsuarioDTO> obtenerTodos() {
+  // public List<UsuarioDTO> obtenerTodos() {
+  // return usuarioRepository.findAll().stream()
+  // .map(UsuarioDTO::fromEntity)
+  // .collect(Collectors.toList());
+  // }
+
+  public List<UsuarioDTO> obtenerTodosExcluyendo(Long idActual) {
     return usuarioRepository.findAll().stream()
+        .filter(usuario -> !usuario.getIdUsuario().equals(idActual))
         .map(UsuarioDTO::fromEntity)
         .collect(Collectors.toList());
   }
@@ -30,25 +37,22 @@ public class UsuarioService {
     usuarioRepository.deleteById(id);
   }
 
-  public void actualizarRol(Long idUsuario, String nuevoRol) {
-    Usuario usuario = usuarioRepository.findById(idUsuario)
+  public void actualizarUsuario(Long id, UsuarioDTO dto) {
+    Usuario usuario = usuarioRepository.findById(id)
         .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Usuario no encontrado"));
-    try {
-      usuario.setRol(Usuario.Rol.valueOf(nuevoRol));
-      usuarioRepository.save(usuario);
-    } catch (IllegalArgumentException e) {
-      throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Rol inválido");
-    }
-  }
 
-  public void actualizarEstado(Long idUsuario, String nuevoEstado) {
-    Usuario usuario = usuarioRepository.findById(idUsuario)
-        .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Usuario no encontrado"));
+    usuario.setNombre(dto.getNombre());
+    usuario.setApellidos(dto.getApellidos());
+    usuario.setNombreUsuario(dto.getNombreUsuario());
+    usuario.setCorreo(dto.getCorreo());
+
     try {
-      usuario.setEstado(Usuario.Estado.valueOf(nuevoEstado));
-      usuarioRepository.save(usuario);
+      usuario.setRol(Usuario.Rol.valueOf(dto.getRol()));
+      usuario.setEstado(Usuario.Estado.valueOf(dto.getEstado()));
     } catch (IllegalArgumentException e) {
-      throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Estado inválido");
+      throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Rol o estado inválido");
     }
+
+    usuarioRepository.save(usuario);
   }
 }

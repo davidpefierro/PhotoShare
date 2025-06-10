@@ -16,30 +16,32 @@ import ProtectedAdminRoute from "./components/ProtectedAdminRoute";
 // Protected route component
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   const { isAuthenticated } = useAuthStore();
-  
+
   if (!isAuthenticated) {
     return <Navigate to="/login" />;
   }
-  
+
   return <>{children}</>;
 };
 
 // Admin route component
 const AdminRoute = ({ children }: { children: React.ReactNode }) => {
   const { isAuthenticated, isAdmin } = useAuthStore();
-  
+
   if (!isAuthenticated) {
     return <Navigate to="/login" />;
   }
-  
+
   if (!isAdmin) {
     return <Navigate to="/" />;
   }
-  
+
   return <>{children}</>;
 };
 
 function App() {
+
+
   return (
     <BrowserRouter>
       <div className="flex flex-col min-h-screen">
@@ -47,27 +49,27 @@ function App() {
         <main className="flex-grow">
           <Routes>
             {/* Admin */}
-              <Route
-    path="/admin/users"
-    element={
-      <ProtectedAdminRoute>
-        <AdminUsersPage />
-      </ProtectedAdminRoute>
-    }
-  />
+            <Route
+              path="/admin/users"
+              element={
+                <ProtectedAdminRoute>
+                  <AdminUsersPage />
+                </ProtectedAdminRoute>
+              }
+            />
             {/* Public routes */}
             <Route path="/" element={<Home />} />
             <Route path="/login" element={<Login />} />
             <Route path="/register" element={<Register />} />
-            
+
             {/* Protected routes */}
-            <Route 
-              path="/upload" 
+            <Route
+              path="/upload"
               element={
                 <ProtectedRoute>
                   <Upload />
                 </ProtectedRoute>
-              } 
+              }
             />
             <Route
               path="/messages"
