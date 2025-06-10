@@ -44,7 +44,7 @@ public class AuthService {
                 token,
                 usuario.getNombreUsuario(),
                 usuario.getRol().name(),
-                usuario.getIdUsuario());
+                usuario.getIdUsuario() != null ? usuario.getIdUsuario().longValue() : null);
     }
 
     public AuthResponse login(LoginRequest request) {
@@ -59,6 +59,6 @@ public class AuthService {
                 token,
                 usuario.getNombreUsuario(),
                 usuario.getRol().name(),
-                usuario.getIdUsuario());
+                usuario.getIdUsuario() != null ? usuario.getIdUsuario().longValue() : null);
     }
 }

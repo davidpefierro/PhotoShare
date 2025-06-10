@@ -18,7 +18,7 @@ public class UsuarioDTO {
 
   public static UsuarioDTO fromEntity(Usuario usuario) {
     return UsuarioDTO.builder()
-        .idUsuario(usuario.getIdUsuario())
+        .idUsuario(usuario.getIdUsuario() != null ? usuario.getIdUsuario().longValue() : null)
         .nombre(usuario.getNombre())
         .apellidos(usuario.getApellidos())
         .nombreUsuario(usuario.getNombreUsuario())
