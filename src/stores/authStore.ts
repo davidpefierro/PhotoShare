@@ -13,7 +13,7 @@ interface AuthState {
 
 export const useAuthStore = create<AuthState>()(
   persist(
-    (set) => ({
+    (set, get) => ({
       user: null,
       isAuthenticated: false,
       isAdmin: false,
@@ -21,7 +21,7 @@ export const useAuthStore = create<AuthState>()(
         set({
           user,
           isAuthenticated: true,
-          isAdmin: user.role === 'ADMIN',
+          isAdmin: user.rol === 'ADMIN',
         }),
       logout: () =>
         set({
@@ -30,14 +30,37 @@ export const useAuthStore = create<AuthState>()(
           isAdmin: false,
         }),
       updateUser: (updatedUser) =>
-        set((state) => ({
-          user: state.user ? { ...state.user, ...updatedUser } : null,
-          isAdmin: updatedUser.role ? updatedUser.role === 'ADMIN' : state.isAdmin,
-        })),
+        set((state) => {
+          const newUser = state.user ? { ...state.user, ...updatedUser } : null;
+          return {
+            user: newUser,
+            isAdmin: updatedUser.rol
+              ? updatedUser.rol === 'ADMIN'
+              : (newUser && newUser.rol === 'ADMIN') || false,
+          };
+        }),
     }),
     {
       name: 'auth-storage',
-      partialize: (state) => ({ user: state.user }),
+      partialize: (state) => ({
+        user: state.user,
+        isAuthenticated: state.isAuthenticated,
+        isAdmin: state.isAdmin,
+      }),
+      onRehydrateStorage: () => (state, error) => {
+        if (state && state.user) {
+          return {
+            ...state,
+            isAuthenticated: true,
+            isAdmin: state.user.rol === 'ADMIN',
+          };
+        }
+        return {
+          user: null,
+          isAuthenticated: false,
+          isAdmin: false,
+        };
+      },
     }
   )
 );
