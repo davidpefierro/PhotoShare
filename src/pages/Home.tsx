@@ -1,12 +1,29 @@
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuthStore } from '../stores/authStore';
 import { Camera, Users, Heart } from 'lucide-react';
 import Button from '../components/ui/Button';
-import PhotoGrid from '../components/photo/PhotoGrid';
+import PhotoCard from '../components/photo/PhotoCard';
+import { useState, useEffect } from 'react';
 
 const Home = () => {
   const { isAuthenticated } = useAuthStore();
   const navigate = useNavigate();
+  const location = useLocation();
+
+  // FEED STATE & PAGINATION
+  const [photos, setPhotos] = useState([]);
+  const [page, setPage] = useState(0);
+  const [totalPages, setTotalPages] = useState(1);
+
+  // Recarga cada vez que 'page' cambia o vuelves a inicio
+ useEffect(() => {
+  fetch(`/api/fotografias?page=${page}&size=10`)
+    .then(res => res.json())
+    .then(data => {
+      setPhotos(data.content);
+      setTotalPages(data.totalPages);
+    });
+}, [page, location.key]);
 
   const handleGetStarted = () => {
     if (isAuthenticated) {
@@ -122,10 +139,32 @@ const Home = () => {
         </>
       )}
 
-      {/* Grid de fotos siempre visible para todos */}
+      {/* Feed de fotos con paginación */}
       <div className="container mx-auto px-4 py-8">
-        <div className="max-w-5xl mx-auto">
-          <PhotoGrid />
+        <div className="max-w-2xl mx-auto">
+          <div className="flex flex-col gap-4">
+            {photos.map(photo => (
+              <PhotoCard key={photo.idFoto} photo={photo} />
+            ))}
+          </div>
+          {/* Paginación */}
+          <div className="flex justify-center mt-8 gap-2">
+            <Button
+              onClick={() => setPage(p => Math.max(0, p - 1))}
+              disabled={page === 0}
+              variant="outline"
+            >
+              Anterior
+            </Button>
+            <span className="self-center">Página {page + 1} de {totalPages}</span>
+            <Button
+              onClick={() => setPage(p => Math.min(totalPages - 1, p + 1))}
+              disabled={page === totalPages - 1}
+              variant="outline"
+            >
+              Siguiente
+            </Button>
+          </div>
         </div>
       </div>
     </div>

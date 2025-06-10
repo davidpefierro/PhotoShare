@@ -17,7 +17,7 @@ obtenerFotos: async (pagina = 0, tamaño = 10): Promise<ApiResponse<PageResponse
           url: foto.url,
           description: foto.descripcion,
           datePosted: foto.fechaPublicacion,
-          // ...otros campos según tu modelo
+          nombreUsuario: foto.nombreUsuario,
         })),
       };
       return {
