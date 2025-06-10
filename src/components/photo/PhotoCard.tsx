@@ -3,83 +3,61 @@ import { Link } from 'react-router-dom';
 import { formatDistanceToNow } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { Heart, MessageCircle, MoreHorizontal, Flag, Trash2 } from 'lucide-react';
-import { Photo } from '../../types';
 import { useAuthStore } from '../../stores/authStore';
 import { usePhotoStore } from '../../stores/photoStore';
 import { photoService } from '../../services/photoService';
-import Button from '../ui/Button';
 
-interface PhotoCardProps {
-  photo: Photo;
-  onLike?: (photoId: number) => void;
-  onDelete?: (photoId: number) => void;
-}
-
-const PhotoCard: React.FC<PhotoCardProps> = ({ photo, onLike, onDelete }) => {
+const PhotoCard = ({ photo, onLike, onDelete }) => {
   const [showActions, setShowActions] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
   const { user, isAuthenticated } = useAuthStore();
   const toggleLike = usePhotoStore((state) => state.toggleLike);
-  const isOwnPhoto = user?.id === photo.userId;
+
+  // Saca el nombre de usuario y avatar
+const username = photo.nombreUsuario || 'Usuario';
+const avatarLetter = username.charAt(0)?.toUpperCase() || 'U';
+  const userId = photo.usuario?.id_usuario;
+
+  const isOwnPhoto = user?.id === userId;
 
   const handleLike = () => {
-    if (!isAuthenticated) {
-      return;
-    }
-
-    toggleLike(photo.id);
-    if (onLike) {
-      onLike(photo.id);
-    }
+    if (!isAuthenticated) return;
+    toggleLike(photo.id_foto);
+    if (onLike) onLike(photo.id_foto);
   };
 
   const handleDelete = async () => {
     if (!isAuthenticated || !isOwnPhoto) return;
-
-    const confirmDelete = window.confirm('¿Estás seguro de que quieres eliminar esta foto?');
-    if (!confirmDelete) return;
-
+    if (!window.confirm('¿Estás seguro de que quieres eliminar esta foto?')) return;
     setIsDeleting(true);
     try {
-      const response = await photoService.deletePhoto(photo.id);
-
-      if (response.success) {
-        if (onDelete) {
-          onDelete(photo.id);
-        }
-      } else {
-        alert('Error al eliminar la foto: ' + response.message);
-      }
-    } catch (error) {
+      const response = await photoService.deletePhoto(photo.id_foto);
+      if (response.success && onDelete) onDelete(photo.id_foto);
+      else alert('Error al eliminar la foto.');
+    } catch {
       alert('Ha ocurrido un error al eliminar la foto');
     } finally {
       setIsDeleting(false);
     }
   };
 
-  // Arreglo robusto: proteger el acceso a charAt
-  const avatarLetter =
-    typeof photo.username === 'string' && photo.username.length > 0
-      ? photo.username.charAt(0).toUpperCase()
-      : '?';
-
   return (
     <div className="bg-white rounded-lg shadow-md overflow-hidden animate-fade-in">
       <div className="p-4 flex items-center">
-        <Link to={`/profile/${photo.userId}`} className="flex items-center">
+        <Link to={`/profile/${userId}`} className="flex items-center">
           <div className="h-10 w-10 rounded-full bg-primary-200 flex items-center justify-center text-primary-700">
             {avatarLetter}
           </div>
           <div className="ml-3">
-            <p className="text-sm font-medium text-gray-900">{photo.username || 'Usuario'}</p>
+             <p className="text-sm font-medium text-gray-900">@{username}</p>
+
             <p className="text-xs text-gray-500">
-              {photo.datePosted
-                ? formatDistanceToNow(new Date(photo.datePosted), { addSuffix: true, locale: es })
+              {photo.fecha_publicacion
+                ? formatDistanceToNow(new Date(photo.fecha_publicacion), { addSuffix: true, locale: es })
                 : ''}
             </p>
           </div>
         </Link>
-
         <div className="ml-auto relative">
           <button
             onClick={() => setShowActions(!showActions)}
@@ -87,10 +65,9 @@ const PhotoCard: React.FC<PhotoCardProps> = ({ photo, onLike, onDelete }) => {
           >
             <MoreHorizontal className="h-5 w-5" />
           </button>
-
           {showActions && (
             <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1 z-10 ring-1 ring-black ring-opacity-5">
-              {isOwnPhoto && (
+              {isOwnPhoto ? (
                 <button
                   onClick={handleDelete}
                   disabled={isDeleting}
@@ -99,12 +76,9 @@ const PhotoCard: React.FC<PhotoCardProps> = ({ photo, onLike, onDelete }) => {
                   <Trash2 className="h-4 w-4 mr-2" />
                   {isDeleting ? 'Eliminando...' : 'Eliminar Foto'}
                 </button>
-              )}
-              {!isOwnPhoto && (
+              ) : (
                 <button
-                  onClick={() => {
-                    setShowActions(false);
-                  }}
+                  onClick={() => setShowActions(false)}
                   className="flex items-center w-full px-4 py-2 text-sm text-left text-gray-700 hover:bg-gray-100"
                 >
                   <Flag className="h-4 w-4 mr-2" />
@@ -115,16 +89,14 @@ const PhotoCard: React.FC<PhotoCardProps> = ({ photo, onLike, onDelete }) => {
           )}
         </div>
       </div>
-
-      <Link to={`/photos/${photo.id}`}>
+      <Link to={`/photos/${photo.id_foto}`}>
         <img
           src={photo.url}
-          alt={photo.description || 'Foto'}
+          alt={photo.descripcion || 'Foto'}
           className="w-full object-cover h-64 sm:h-96"
           loading="lazy"
         />
       </Link>
-
       <div className="p-4">
         <div className="flex items-center">
           <button
@@ -136,18 +108,16 @@ const PhotoCard: React.FC<PhotoCardProps> = ({ photo, onLike, onDelete }) => {
             <Heart className={`h-5 w-5 ${photo.userLiked ? 'fill-current' : ''}`} />
             <span className="ml-1 text-sm">{photo.likesCount}</span>
           </button>
-
           <Link
-            to={`/photos/${photo.id}`}
+            to={`/photos/${photo.id_foto}`}
             className="flex items-center text-gray-500 hover:text-primary-500"
           >
             <MessageCircle className="h-5 w-5" />
             <span className="ml-1 text-sm">{photo.commentsCount}</span>
           </Link>
         </div>
-
-        {photo.description && (
-          <p className="mt-3 text-sm text-gray-700">{photo.description}</p>
+        {photo.descripcion && (
+          <p className="mt-3 text-sm text-gray-700">{photo.descripcion}</p>
         )}
       </div>
     </div>

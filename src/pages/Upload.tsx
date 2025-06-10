@@ -75,6 +75,7 @@ const UploadPage = () => {
     } finally {
       setIsUploading(false);
     }
+      window.location.reload();
   };
 
   const clearSelection = () => {

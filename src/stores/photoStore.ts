@@ -24,29 +24,38 @@ export const usePhotoStore = create<PhotoState>()((set, get) => ({
   currentPage: 0,
   error: null,
   
-  fetchPhotos: async (refresh = false) => {
-    try {
-      set({ loading: true, error: null });
-      
-      const page = refresh ? 0 : get().currentPage;
-      // Usa el método correcto y accede a la estructura correcta
-      const response = await photoService.obtenerFotos(page);
+ fetchPhotos: async (refresh = false) => {
+  try {
+    set({ loading: true, error: null });
+    const page = refresh ? 0 : get().currentPage;
+    const response = await photoService.obtenerFotos(page);
 
-      if (response.success && response.data && Array.isArray(response.data.content)) {
-        const pageData = response.data;
-        set((state) => ({
-          photos: refresh ? pageData.content : [...state.photos, ...pageData.content],
+    if (response.success && response.data && Array.isArray(response.data.content)) {
+      const pageData = response.data;
+      set((state) => {
+        // Mezclar y ordenar por fecha descendente
+        const allPhotos = refresh
+          ? pageData.content
+          : [...state.photos, ...pageData.content];
+        allPhotos.sort(
+          (a, b) =>
+            new Date(b.fechaPublicacion).valueOf() -
+            new Date(a.fechaPublicacion).valueOf()
+        );
+        return {
+          photos: allPhotos,
           hasMore: !pageData.last,
           currentPage: refresh ? 1 : state.currentPage + 1,
           loading: false,
-        }));
-      } else {
-        set({ error: response.message || 'No se pudieron obtener las fotos.', loading: false });
-      }
-    } catch (error) {
-      set({ error: 'Failed to fetch photos', loading: false });
+        };
+      });
+    } else {
+      set({ error: response.message || 'No se pudieron obtener las fotos.', loading: false });
     }
-  },
+  } catch (error) {
+    set({ error: 'Failed to fetch photos', loading: false });
+  }
+},
   
   addPhoto: (photo) => {
     set((state) => ({
@@ -68,45 +77,39 @@ export const usePhotoStore = create<PhotoState>()((set, get) => ({
     }));
   },
   
-  toggleLike: async (id) => {
-    const photo = get().photos.find((p) => p.id === id);
-    if (!photo) return;
-    
-    // Optimistic update
-    set((state) => ({
-      photos: state.photos.map((p) =>
-        p.id === id
-          ? {
-              ...p,
-              userLiked: !p.userLiked,
-              likesCount: p.userLiked ? p.likesCount - 1 : p.likesCount + 1,
-            }
-          : p
-      ),
-    }));
-    
-    try {
-      // Actual API call
-      const response = photo.userLiked
-        ? await photoService.unlikePhoto(id)
-        : await photoService.likePhoto(id);
-        
-      if (!response.success) {
-        // Revert on failure
-        set((state) => ({
-          photos: state.photos.map((p) =>
-            p.id === id
-              ? {
-                  ...p,
-                  userLiked: !p.userLiked,
-                  likesCount: p.userLiked ? p.likesCount - 1 : p.likesCount + 1,
-                }
-              : p
-          ),
-        }));
-      }
-    } catch (error) {
-      // Revert on error
+ toggleLike: async (id) => {
+  const photo = get().photos.find((p) => p.id === id);
+  if (!photo) return;
+
+  // Optimistic update
+  set((state) => ({
+    photos: state.photos.map((p) =>
+      p.id === id
+        ? {
+            ...p,
+            userLiked: !p.userLiked,
+            likesCount: p.userLiked ? p.likesCount - 1 : p.likesCount + 1,
+          }
+        : p
+    ),
+  }));
+
+  try {
+    const response = photo.userLiked
+      ? await photoService.unlikePhoto(id)
+      : await photoService.likePhoto(id);
+
+    if (response.success && response.data) {
+      // Si el backend devuelve la foto actualizada, úsala
+      set((state) => ({
+        photos: state.photos.map((p) =>
+          p.id === id
+            ? { ...p, ...response.data }
+            : p
+        ),
+      }));
+    } else if (!response.success) {
+      // Revert on failure
       set((state) => ({
         photos: state.photos.map((p) =>
           p.id === id
@@ -119,5 +122,19 @@ export const usePhotoStore = create<PhotoState>()((set, get) => ({
         ),
       }));
     }
-  },
+  } catch (error) {
+    // Revert on error
+    set((state) => ({
+      photos: state.photos.map((p) =>
+        p.id === id
+          ? {
+              ...p,
+              userLiked: !p.userLiked,
+              likesCount: p.userLiked ? p.likesCount - 1 : p.likesCount + 1,
+            }
+          : p
+      ),
+    }));
+  }
+},
 }));
