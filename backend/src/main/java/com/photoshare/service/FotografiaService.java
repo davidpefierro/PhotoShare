@@ -23,8 +23,8 @@ public class FotografiaService {
 
     private final FotografiaRepository fotografiaRepository;
     private final UsuarioRepository usuarioRepository;
- @Autowired
-private MeGustaRepository meGustaRepository;
+    @Autowired
+    private MeGustaRepository meGustaRepository;
 
     public FotografiaService(FotografiaRepository fotografiaRepository, UsuarioRepository usuarioRepository) {
         this.fotografiaRepository = fotografiaRepository;
@@ -51,7 +51,8 @@ private MeGustaRepository meGustaRepository;
 
     public Optional<FotografiaDTO> findById(Integer id) {
         Optional<Fotografia> fotoOpt = fotografiaRepository.findById(id);
-        if (fotoOpt.isEmpty()) return Optional.empty();
+        if (fotoOpt.isEmpty())
+            return Optional.empty();
         Fotografia foto = fotoOpt.get();
         Optional<Usuario> usuarioOpt = usuarioRepository.findById(foto.getIdUsuario().longValue());
         String nombreUsuario = usuarioOpt.map(Usuario::getNombreUsuario).orElse("Usuario");
@@ -92,34 +93,33 @@ private MeGustaRepository meGustaRepository;
         fotografiaRepository.deleteById(idFoto);
     }
 
-
-// Dar like a una foto
-public boolean likePhoto(Integer idFoto, Integer idUsuario) {
-    if (!meGustaRepository.existsByIdFotoAndIdUsuario(idFoto, idUsuario)) {
-        MeGusta meGusta = new MeGusta(idUsuario, idFoto, LocalDateTime.now());
-        meGustaRepository.save(meGusta);
-        return true;
+    // Dar like a una foto
+    public boolean likePhoto(Integer idFoto, Integer idUsuario) {
+        if (!meGustaRepository.existsByIdFotoAndIdUsuario(idFoto, idUsuario)) {
+            MeGusta meGusta = new MeGusta(idUsuario, idFoto, LocalDateTime.now());
+            meGustaRepository.save(meGusta);
+            return true;
+        }
+        return false;
     }
-    return false;
-}
 
-// Quitar like a una foto
-public boolean unlikePhoto(Integer idFoto, Integer idUsuario) {
-    if (meGustaRepository.existsByIdFotoAndIdUsuario(idFoto, idUsuario)) {
-        meGustaRepository.deleteByIdFotoAndIdUsuario(idFoto, idUsuario);
-        return true;
+    // Quitar like a una foto
+    public boolean unlikePhoto(Integer idFoto, Integer idUsuario) {
+        if (meGustaRepository.existsByIdFotoAndIdUsuario(idFoto, idUsuario)) {
+            meGustaRepository.deleteByIdFotoAndIdUsuario(idFoto, idUsuario);
+            return true;
+        }
+        return false;
     }
-    return false;
-}
 
-// Saber si un usuario ha dado MG
-public boolean userLiked(Integer idFoto, Integer idUsuario) {
-    return meGustaRepository.existsByIdFotoAndIdUsuario(idFoto, idUsuario);
-}
+    // Saber si un usuario ha dado MG
+    public boolean userLiked(Integer idFoto, Integer idUsuario) {
+        return meGustaRepository.existsByIdFotoAndIdUsuario(idFoto, idUsuario);
+    }
 
-// Contar likes totales de una foto
-public int likesCount(Integer idFoto) {
-    return meGustaRepository.countByIdFoto(idFoto);
-}
+    // Contar likes totales de una foto
+    public int likesCount(Integer idFoto) {
+        return meGustaRepository.countByIdFoto(idFoto);
+    }
 
 }

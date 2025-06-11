@@ -37,20 +37,53 @@ public class UsuarioService {
     usuarioRepository.deleteById(id);
   }
 
+  // public void actualizarUsuario(Long id, UsuarioDTO dto) {
+  // Usuario usuario = usuarioRepository.findById(id)
+  // .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Usuario
+  // no encontrado"));
+
+  // usuario.setNombre(dto.getNombre());
+  // usuario.setApellidos(dto.getApellidos());
+  // usuario.setNombreUsuario(dto.getNombreUsuario());
+  // usuario.setCorreo(dto.getCorreo());
+
+  // try {
+  // usuario.setRol(Usuario.Rol.valueOf(dto.getRol()));
+  // usuario.setEstado(Usuario.Estado.valueOf(dto.getEstado()));
+  // } catch (IllegalArgumentException e) {
+  // throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Rol o estado
+  // inválido");
+  // }
+
+  // usuarioRepository.save(usuario);
+  // }
   public void actualizarUsuario(Long id, UsuarioDTO dto) {
     Usuario usuario = usuarioRepository.findById(id)
         .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Usuario no encontrado"));
 
-    usuario.setNombre(dto.getNombre());
-    usuario.setApellidos(dto.getApellidos());
-    usuario.setNombreUsuario(dto.getNombreUsuario());
-    usuario.setCorreo(dto.getCorreo());
+    if (dto.getNombre() != null)
+      usuario.setNombre(dto.getNombre());
+    if (dto.getApellidos() != null)
+      usuario.setApellidos(dto.getApellidos());
+    if (dto.getNombreUsuario() != null)
+      usuario.setNombreUsuario(dto.getNombreUsuario());
+    if (dto.getCorreo() != null)
+      usuario.setCorreo(dto.getCorreo());
 
-    try {
-      usuario.setRol(Usuario.Rol.valueOf(dto.getRol()));
-      usuario.setEstado(Usuario.Estado.valueOf(dto.getEstado()));
-    } catch (IllegalArgumentException e) {
-      throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Rol o estado inválido");
+    // Solo actualiza si el frontend lo manda (opcional)
+    if (dto.getRol() != null) {
+      try {
+        usuario.setRol(Usuario.Rol.valueOf(dto.getRol()));
+      } catch (IllegalArgumentException e) {
+        throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Rol inválido");
+      }
+    }
+    if (dto.getEstado() != null) {
+      try {
+        usuario.setEstado(Usuario.Estado.valueOf(dto.getEstado()));
+      } catch (IllegalArgumentException e) {
+        throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Estado inválido");
+      }
     }
 
     usuarioRepository.save(usuario);
