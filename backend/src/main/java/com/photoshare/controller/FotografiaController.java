@@ -33,8 +33,7 @@ public class FotografiaController {
     @GetMapping("")
     public ResponseEntity<?> listarPaginado(
             @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size
-    ) {
+            @RequestParam(defaultValue = "10") int size) {
         return ResponseEntity.ok(fotografiaService.findAll(PageRequest.of(page, size)));
     }
 
@@ -43,8 +42,7 @@ public class FotografiaController {
     public ResponseEntity<?> listarPorUsuario(
             @PathVariable Integer idUsuario,
             @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size
-    ) {
+            @RequestParam(defaultValue = "10") int size) {
         return ResponseEntity.ok(fotografiaService.findByUsuario(idUsuario, PageRequest.of(page, size)));
     }
 
@@ -57,23 +55,23 @@ public class FotografiaController {
     }
 
     // Subir foto usando nombreUsuario
-     @PostMapping("/upload")
+    @PostMapping("/upload")
     public ResponseEntity<?> uploadFotografia(
             @RequestParam("imageFile") MultipartFile imageFile,
             @RequestParam("descripcion") String descripcion,
-            @RequestParam("nombreUsuario") String nombreUsuario
-    ) {
+            @RequestParam("nombreUsuario") String nombreUsuario) {
         try {
-            System.out.println("Intentando subir foto de usuario: " + nombreUsuario + " con descripción: " + descripcion);
+            System.out
+                    .println("Intentando subir foto de usuario: " + nombreUsuario + " con descripción: " + descripcion);
 
-        Optional<Usuario> usuarioOpt = usuarioRepository.findByNombreUsuario(nombreUsuario);
-        if (usuarioOpt.isEmpty()) {
-            System.out.println("Usuario no encontrado: " + nombreUsuario);
-            return ResponseEntity.badRequest().body("Usuario no encontrado");
-        }
-        Usuario usuario = usuarioOpt.get();
-        Integer idUsuario = usuario.getIdUsuario().intValue();
-        System.out.println("ID del usuario encontrado: " + idUsuario);
+            Optional<Usuario> usuarioOpt = usuarioRepository.findByNombreUsuario(nombreUsuario);
+            if (usuarioOpt.isEmpty()) {
+                System.out.println("Usuario no encontrado: " + nombreUsuario);
+                return ResponseEntity.badRequest().body("Usuario no encontrado");
+            }
+            Usuario usuario = usuarioOpt.get();
+            Integer idUsuario = usuario.getIdUsuario().intValue();
+            System.out.println("ID del usuario encontrado: " + idUsuario);
             if (imageFile.isEmpty()) {
                 return ResponseEntity.badRequest().body("No se subió ninguna imagen");
             }
@@ -106,16 +104,12 @@ public class FotografiaController {
                             "data", Map.of(
                                     "id", guardada.getIdFoto(),
                                     "url", url,
-                                    "descripcion", descripcion
-                            )
-                    )
-            );
+                                    "descripcion", descripcion)));
         } catch (Exception e) {
-        System.out.println("Error real al subir la foto:");
-        e.printStackTrace();
-        return ResponseEntity.internalServerError().body(
-            Map.of("success", false, "message", "No se pudo subir la foto.")
-        );
+            System.out.println("Error real al subir la foto:");
+            e.printStackTrace();
+            return ResponseEntity.internalServerError().body(
+                    Map.of("success", false, "message", "No se pudo subir la foto."));
         }
     }
 
@@ -128,29 +122,28 @@ public class FotografiaController {
         } catch (Exception e) {
             e.printStackTrace();
             return ResponseEntity.internalServerError().body(
-                    Map.of("success", false, "message", "Error al eliminar la foto")
-            );
+                    Map.of("success", false, "message", "Error al eliminar la foto"));
         }
     }
 
     @PostMapping("/{id}/like")
-public ResponseEntity<?> likeFoto(@PathVariable Integer id, @RequestParam Integer idUsuario) {
-    boolean liked = fotografiaService.likePhoto(id, idUsuario);
-    int count = fotografiaService.likesCount(id);
-    return ResponseEntity.ok(Map.of("liked", true, "likesCount", count));
-}
+    public ResponseEntity<?> likeFoto(@PathVariable Integer id, @RequestParam Integer idUsuario) {
+        boolean liked = fotografiaService.likePhoto(id, idUsuario);
+        int count = fotografiaService.likesCount(id);
+        return ResponseEntity.ok(Map.of("liked", true, "likesCount", count));
+    }
 
-@PostMapping("/{id}/unlike")
-public ResponseEntity<?> unlikeFoto(@PathVariable Integer id, @RequestParam Integer idUsuario) {
-    boolean unliked = fotografiaService.unlikePhoto(id, idUsuario);
-    int count = fotografiaService.likesCount(id);
-    return ResponseEntity.ok(Map.of("liked", false, "likesCount", count));
-}
+    @PostMapping("/{id}/unlike")
+    public ResponseEntity<?> unlikeFoto(@PathVariable Integer id, @RequestParam Integer idUsuario) {
+        boolean unliked = fotografiaService.unlikePhoto(id, idUsuario);
+        int count = fotografiaService.likesCount(id);
+        return ResponseEntity.ok(Map.of("liked", false, "likesCount", count));
+    }
 
-@GetMapping("/{id}/likes")
-public ResponseEntity<?> getLikes(@PathVariable Integer id, @RequestParam Integer idUsuario) {
-    boolean liked = fotografiaService.userLiked(id, idUsuario);
-    int count = fotografiaService.likesCount(id);
-    return ResponseEntity.ok(Map.of("liked", liked, "likesCount", count));
-}
+    @GetMapping("/{id}/likes")
+    public ResponseEntity<?> getLikes(@PathVariable Integer id, @RequestParam Integer idUsuario) {
+        boolean liked = fotografiaService.userLiked(id, idUsuario);
+        int count = fotografiaService.likesCount(id);
+        return ResponseEntity.ok(Map.of("liked", liked, "likesCount", count));
+    }
 }

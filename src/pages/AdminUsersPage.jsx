@@ -6,26 +6,33 @@ export default function AdminUsersPage() {
   const [usuarios, setUsuarios] = useState([]);
   const [usuarioEditar, setUsuarioEditar] = useState(null);
 
-  // Estados para búsqueda y orden
   const [search, setSearch] = useState("");
   const [sortAsc, setSortAsc] = useState(true);
 
   const usuarioActual = useAuthStore((state) => state.user);
-  const idUsuarioActual = usuarioActual?.idUsuario;
+  // const idUsuarioActual = usuarioActual?.idUsuario;
+  const idUsuarioActual = Number(usuarioActual?.idUsuario);
 
   useEffect(() => {
-    obtenerUsuarios();
+    if (idUsuarioActual) {
+      obtenerUsuarios();
+    }
     // eslint-disable-next-line
-  }, []);
+  }, [idUsuarioActual]);
+  console.log("ID del usuario logueado:", idUsuarioActual);
 
   const obtenerUsuarios = () => {
-    if (!idUsuarioActual) {
-      console.error("ID de usuario actual no disponible");
-      return;
-    }
     fetch(`http://localhost:8080/api/usuarios?idActual=${idUsuarioActual}`)
       .then((res) => res.json())
-      .then((data) => setUsuarios(Array.isArray(data) ? data : []))
+      .then((data) => {
+        if (Array.isArray(data)) {
+          setUsuarios(data);
+        } else {
+          console.error("Respuesta inesperada:", data);
+          setUsuarios([]);
+        }
+      })
+
       .catch((error) => console.error("Error al cargar usuarios:", error));
   };
 
@@ -84,25 +91,25 @@ export default function AdminUsersPage() {
       });
   };
 
-  // Filtrar y ordenar usuarios
   const usuariosFiltrados = usuarios
+    .filter((u) => u.idUsuario !== idUsuarioActual) // EXCLUYE al admin logueado
     .filter(u =>
       u.nombre.toLowerCase().includes(search.toLowerCase()) ||
       (u.apellidos || "").toLowerCase().includes(search.toLowerCase()) ||
       u.nombreUsuario.toLowerCase().includes(search.toLowerCase()) ||
       u.correo.toLowerCase().includes(search.toLowerCase())
     )
-    .sort((a, b) => sortAsc
-      ? a.idUsuario - b.idUsuario
-      : b.idUsuario - a.idUsuario
-    );
+    .sort((a, b) => sortAsc ? a.idUsuario - b.idUsuario : b.idUsuario - a.idUsuario);
+
+  if (!idUsuarioActual || isNaN(idUsuarioActual)) {
+    return <div className="p-6 text-center">Cargando...</div>;
+  }
+
 
   return (
     <div className="min-h-screen p-6 bg-gray-100">
       <div className="max-w-4xl mx-auto bg-white rounded shadow p-6">
         <h1 className="text-2xl font-bold mb-6">Administrar usuarios</h1>
-
-        {/* Barra de búsqueda y botón de orden */}
         <div className="flex gap-4 mb-4 items-center">
           <input
             type="text"
@@ -118,7 +125,6 @@ export default function AdminUsersPage() {
             Ordenar por ID {sortAsc ? "↑" : "↓"}
           </button>
         </div>
-
         <table className="w-full table-auto">
           <thead>
             <tr>
@@ -159,13 +165,10 @@ export default function AdminUsersPage() {
           </tbody>
         </table>
       </div>
-
-      {/* Modal */}
       {usuarioEditar && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
           <div className="bg-white p-6 rounded shadow max-w-md w-full">
             <h2 className="text-xl font-bold mb-4">Editar usuario</h2>
-
             <div className="mb-4">
               <label className="block mb-1">Nombre:</label>
               <input
@@ -175,7 +178,6 @@ export default function AdminUsersPage() {
                 className="border px-3 py-2 w-full rounded"
               />
             </div>
-
             <div className="mb-4">
               <label className="block mb-1">Apellidos:</label>
               <input
@@ -185,7 +187,6 @@ export default function AdminUsersPage() {
                 className="border px-3 py-2 w-full rounded"
               />
             </div>
-
             <div className="mb-4">
               <label className="block mb-1">Nombre de usuario:</label>
               <input
@@ -195,7 +196,6 @@ export default function AdminUsersPage() {
                 className="border px-3 py-2 w-full rounded"
               />
             </div>
-
             <div className="mb-4">
               <label className="block mb-1">Correo:</label>
               <input
@@ -205,7 +205,6 @@ export default function AdminUsersPage() {
                 className="border px-3 py-2 w-full rounded"
               />
             </div>
-
             <div className="mb-4">
               <label className="block mb-1">Rol:</label>
               <select
@@ -217,7 +216,6 @@ export default function AdminUsersPage() {
                 <option value="Administrador">Administrador</option>
               </select>
             </div>
-
             <div className="mb-4">
               <label className="block mb-1">Estado:</label>
               <select
@@ -229,7 +227,6 @@ export default function AdminUsersPage() {
                 <option value="Bloqueado">Bloqueado</option>
               </select>
             </div>
-
             <div className="flex justify-end gap-2">
               <button
                 onClick={() => setUsuarioEditar(null)}
