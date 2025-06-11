@@ -3,8 +3,8 @@ import { useParams } from "react-router-dom";
 import { formatDistanceToNow } from "date-fns";
 import { es } from "date-fns/locale";
 import { Heart } from "lucide-react";
-import { photoService } from "../../services/photoService";
-import { useAuthStore } from "../../stores/authStore";
+import { photoService } from "../services/photoService";
+import { useAuthStore } from "../stores/authStore";
 
 const PhotoDetailPage = () => {
   const { id } = useParams();
@@ -14,15 +14,25 @@ const PhotoDetailPage = () => {
   const [commentText, setCommentText] = useState("");
   const [loading, setLoading] = useState(true);
   const [commentLoading, setCommentLoading] = useState(false);
+  const [isLiking, setIsLiking] = useState(false);
+  // Estados locales para MG en detalle
+  const [userLiked, setUserLiked] = useState(false);
+  const [likesCount, setLikesCount] = useState(0);
 
+  // Carga la foto y los comentarios
   useEffect(() => {
+    // Si usas protección por login, espera a que user esté disponible (null o un objeto, nunca undefined)
+    if (user === undefined) return;
     const fetchPhoto = async () => {
       setLoading(true);
-      const res = await photoService.obtenerFoto(Number(id));
-      if (res.success && res.data) {
-        setPhoto(res.data);
+      const res = await photoService.obtenerFoto(Number(id), user?.idUsuario ?? user?.id);
+      if (res && res.idFoto) {
+        setPhoto(res);
+        setUserLiked(res.userLiked);
+        setLikesCount(res.likesCount);
+      } else {
+        setPhoto(null);
       }
-      // Aquí deberías llamar a tu servicio de comentarios
       if (photoService.obtenerComentarios) {
         const cRes = await photoService.obtenerComentarios(Number(id));
         setComments(cRes.success && Array.isArray(cRes.data) ? cRes.data : []);
@@ -30,8 +40,29 @@ const PhotoDetailPage = () => {
       setLoading(false);
     };
     fetchPhoto();
-    // eslint-disable-next-line
-  }, [id]);
+  }, [id, user]);
+  
+  const handleLike = async () => {
+    if (!isAuthenticated) return;
+    setIsLiking(true);
+    try {
+      if (userLiked) {
+        const res = await photoService.quitarLikeAFoto(Number(id), user.idUsuario ?? user.id);
+        if (res.success) {
+          setUserLiked(false);
+          setLikesCount(res.likesCount);
+        }
+      } else {
+        const res = await photoService.darLikeAFoto(Number(id), user.idUsuario ?? user.id);
+        if (res.success) {
+          setUserLiked(true);
+          setLikesCount(res.likesCount);
+        }
+      }
+    } finally {
+      setIsLiking(false);
+    }
+  };
 
   const handleCommentSubmit = async (e) => {
     e.preventDefault();
@@ -51,15 +82,19 @@ const PhotoDetailPage = () => {
   if (!photo) return <div className="p-8">Foto no encontrada.</div>;
 
   return (
-    <div className="flex min-h-screen bg-gray-100">
-      <div className="flex-1 flex justify-center items-center bg-black">
-        <img
-          src={photo.url}
-          alt={photo.descripcion || "Foto"}
-          className="max-h-[90vh] max-w-full object-contain"
-        />
+    <div className="flex flex-col md:flex-row min-h-screen bg-gray-100">
+      {/* Foto */}
+      <div className="w-full md:flex-1 flex justify-center items-center bg-black">
+        <div className="bg-white rounded-lg shadow-lg p-6 m-4 border border-gray-300 flex justify-center items-center w-full md:w-auto">
+          <img
+            src={photo.url}
+            alt={photo.descripcion || "Foto"}
+            className="max-h-[60vh] max-w-full object-contain"
+          />
+        </div>
       </div>
-      <div className="w-full max-w-md bg-white border-l border-gray-200 flex flex-col">
+      {/* Comentarios y detalles */}
+      <div className="w-full md:max-w-md bg-white border-t md:border-t-0 md:border-l border-gray-200 flex flex-col">
         {/* Header */}
         <div className="flex items-center px-4 py-3 border-b">
           <div className="h-9 w-9 rounded-full bg-primary-200 flex items-center justify-center text-primary-700">
@@ -101,12 +136,14 @@ const PhotoDetailPage = () => {
         <div className="border-t p-4">
           <div className="flex items-center mb-4">
             <button
-              className={`mr-3 ${photo.userLiked ? "text-accent-500" : "text-gray-400 hover:text-accent-500"}`}
-              // onClick={} // Aquí puedes añadir lógica para like si quieres
+              className={`mr-3 ${userLiked ? "text-accent-500" : "text-gray-400 hover:text-accent-500"}`}
+              onClick={handleLike}
+              disabled={!isAuthenticated || isLiking}
+              aria-label={userLiked ? 'Quitar me gusta' : 'Dar me gusta'}
             >
-              <Heart className={`h-6 w-6 ${photo.userLiked ? "fill-current" : ""}`} />
+              <Heart className={`h-6 w-6 ${userLiked ? "fill-current" : ""}`} />
             </button>
-            <span className="text-sm text-gray-700">{photo.likesCount} me gusta</span>
+            <span className="text-sm text-gray-700">{likesCount} me gusta</span>
           </div>
           <form onSubmit={handleCommentSubmit} className="flex space-x-2">
             <input

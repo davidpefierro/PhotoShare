@@ -12,36 +12,24 @@ import MessagesPage from "./pages/MessagesPage";
 import ConversationPage from "./pages/ConversationPage";
 import AdminUsersPage from "./pages/AdminUsersPage";
 import ProtectedAdminRoute from "./components/ProtectedAdminRoute";
+import PhotoDetailPage from './pages/PhotoDetailPage';
 
 // Protected route component
-const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
+const ProtectedRoute = ({ children }) => {
   const { isAuthenticated } = useAuthStore();
-
-  if (!isAuthenticated) {
-    return <Navigate to="/login" />;
-  }
-
+  if (!isAuthenticated) return <Navigate to="/login" />;
   return <>{children}</>;
 };
 
 // Admin route component
-const AdminRoute = ({ children }: { children: React.ReactNode }) => {
+const AdminRoute = ({ children }) => {
   const { isAuthenticated, isAdmin } = useAuthStore();
-
-  if (!isAuthenticated) {
-    return <Navigate to="/login" />;
-  }
-
-  if (!isAdmin) {
-    return <Navigate to="/" />;
-  }
-
+  if (!isAuthenticated) return <Navigate to="/login" />;
+  if (!isAdmin) return <Navigate to="/" />;
   return <>{children}</>;
 };
 
 function App() {
-
-
   return (
     <BrowserRouter>
       <div className="flex flex-col min-h-screen">
@@ -87,6 +75,9 @@ function App() {
                 </ProtectedRoute>
               }
             />
+
+            {/* Photo Detail Route - AÑADE ESTA RUTA */}
+            <Route path="/fotografias/:id" element={<PhotoDetailPage />} />
 
             {/* Fallback route */}
             <Route path="*" element={<Navigate to="/" />} />

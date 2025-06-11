@@ -4,27 +4,48 @@ import { formatDistanceToNow } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { Heart, MessageCircle, MoreHorizontal, Flag, Trash2 } from 'lucide-react';
 import { useAuthStore } from '../../stores/authStore';
-import { usePhotoStore } from '../../stores/photoStore';
 import { photoService } from '../../services/photoService';
 
 const PhotoCard = ({ photo, onLike, onDelete }) => {
+  const { user, isAuthenticated } = useAuthStore();
+
+  // Estado local para MG y contador de likes
+  const [userLiked, setUserLiked] = useState(photo.userLiked);
+  const [likesCount, setLikesCount] = useState(photo.likesCount ?? 0);
+  const [isLiking, setIsLiking] = useState(false);
   const [showActions, setShowActions] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
-  const { user, isAuthenticated } = useAuthStore();
-  const toggleLike = usePhotoStore((state) => state.toggleLike);
 
-  // Usa el nombre de usuario y el id del usuario del backend directamente
   const username = photo.nombreUsuario || 'Usuario';
   const avatarLetter = username.charAt(0)?.toUpperCase() || 'U';
-  const userId = photo.idUsuario; // CORREGIDO: ahora usa el campo correcto de la API
-  const photoId = photo.idFoto;   // Usamos idFoto en vez de id_foto
-
+  const userId = photo.idUsuario;
+  const photoId = photo.idFoto;
   const isOwnPhoto = user?.id === userId || user?.idUsuario === userId;
 
-  const handleLike = () => {
+  const handleLike = async () => {
     if (!isAuthenticated) return;
-    toggleLike(photoId);
-    if (onLike) onLike(photoId);
+    setIsLiking(true);
+    try {
+      if (userLiked) {
+        // Quitar MG
+        const res = await photoService.quitarLikeAFoto(photoId, user.idUsuario ?? user.id);
+        if (res.success) {
+          setUserLiked(false);
+          setLikesCount(res.likesCount);
+          if (onLike) onLike(photoId, false, res.likesCount);
+        }
+      } else {
+        // Dar MG
+        const res = await photoService.darLikeAFoto(photoId, user.idUsuario ?? user.id);
+        if (res.success) {
+          setUserLiked(true);
+          setLikesCount(res.likesCount);
+          if (onLike) onLike(photoId, true, res.likesCount);
+        }
+      }
+    } finally {
+      setIsLiking(false);
+    }
   };
 
   const handleDelete = async () => {
@@ -32,7 +53,7 @@ const PhotoCard = ({ photo, onLike, onDelete }) => {
     if (!window.confirm('¿Estás seguro de que quieres eliminar esta foto?')) return;
     setIsDeleting(true);
     try {
-      const response = await photoService.deletePhoto(photoId);
+      const response = await photoService.eliminarFoto(photoId);
       if (response.success && onDelete) onDelete(photoId);
       else alert('Error al eliminar la foto.');
     } catch {
@@ -52,8 +73,8 @@ const PhotoCard = ({ photo, onLike, onDelete }) => {
           <div className="ml-3">
             <p className="text-sm font-medium text-gray-900">@{username}</p>
             <p className="text-xs text-gray-500">
-              {photo.fecha_publicacion
-                ? formatDistanceToNow(new Date(photo.fecha_publicacion), { addSuffix: true, locale: es })
+              {photo.fechaPublicacion
+                ? formatDistanceToNow(new Date(photo.fechaPublicacion), { addSuffix: true, locale: es })
                 : ''}
             </p>
           </div>
@@ -89,11 +110,12 @@ const PhotoCard = ({ photo, onLike, onDelete }) => {
           )}
         </div>
       </div>
+      {/* Imagen clickable (detalle) */}
       <Link to={`/fotografias/${photoId}`}>
         <img
           src={photo.url}
           alt={photo.descripcion || 'Foto'}
-          className="w-full object-cover h-64 sm:h-96"
+          className="w-full object-cover h-64 sm:h-96 cursor-pointer"
           loading="lazy"
         />
       </Link>
@@ -101,19 +123,22 @@ const PhotoCard = ({ photo, onLike, onDelete }) => {
         <div className="flex items-center">
           <button
             onClick={handleLike}
+            disabled={isLiking}
             className={`flex items-center mr-4 ${
-              photo.userLiked ? 'text-accent-500' : 'text-gray-500 hover:text-accent-500'
+              userLiked ? 'text-accent-500' : 'text-gray-500 hover:text-accent-500'
             }`}
+            aria-label={userLiked ? 'Quitar me gusta' : 'Dar me gusta'}
           >
-            <Heart className={`h-5 w-5 ${photo.userLiked ? 'fill-current' : ''}`} />
-            <span className="ml-1 text-sm">{photo.likesCount}</span>
+            <Heart className={`h-5 w-5 ${userLiked ? 'fill-current' : ''}`} />
+            <span className="ml-1 text-sm">{likesCount}</span>
           </button>
+          {/* Comentarios: también clickable */}
           <Link
             to={`/fotografias/${photoId}`}
             className="flex items-center text-gray-500 hover:text-primary-500"
           >
             <MessageCircle className="h-5 w-5" />
-            <span className="ml-1 text-sm">{photo.commentsCount}</span>
+            <span className="ml-1 text-sm">{photo.commentsCount ?? 0}</span>
           </Link>
         </div>
         {photo.descripcion && (

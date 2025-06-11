@@ -1,11 +1,16 @@
 import api from './api';
 import { Photo, PhotoCreateRequest, PageResponse, ApiResponse, Comment, CommentCreateRequest } from '../types';
 
+// Puedes pasar el idUsuario autenticado a los métodos para que userLiked siempre sea correcto.
 export const photoService = {
-  obtenerFotos: async (pagina = 0, tamaño = 10): Promise<ApiResponse<PageResponse<Photo>>> => {
+  obtenerFotos: async (
+    pagina = 0,
+    tamaño = 10,
+    idUsuario?: number
+  ): Promise<ApiResponse<PageResponse<Photo>>> => {
     try {
       const respuesta = await api.get('/fotografias', {
-        params: { page: pagina, size: tamaño },
+        params: { page: pagina, size: tamaño, ...(idUsuario ? { idUsuario } : {}) },
       });
       if (respuesta.data && Array.isArray(respuesta.data.content)) {
         const mapped = {
@@ -17,7 +22,7 @@ export const photoService = {
             description: foto.descripcion,
             datePosted: foto.fechaPublicacion,
             nombreUsuario: foto.nombreUsuario,
-            idFoto: foto.idFoto,           // Para compatibilidad con PhotoDetailPage
+            idFoto: foto.idFoto,
             idUsuario: foto.idUsuario,
             fechaPublicacion: foto.fechaPublicacion,
             userLiked: foto.userLiked,
@@ -36,10 +41,15 @@ export const photoService = {
     }
   },
 
-  obtenerFotosDeUsuario: async (idUsuario: number, pagina = 0, tamaño = 10): Promise<ApiResponse<PageResponse<Photo>>> => {
+  obtenerFotosDeUsuario: async (
+    idUsuario: number,
+    pagina = 0,
+    tamaño = 10,
+    idUsuarioAuth?: number
+  ): Promise<ApiResponse<PageResponse<Photo>>> => {
     try {
       const respuesta = await api.get<ApiResponse<PageResponse<Photo>>>(`/fotografias/user/${idUsuario}`, {
-        params: { page: pagina, size: tamaño },
+        params: { page: pagina, size: tamaño, ...(idUsuarioAuth ? { idUsuarioAuth } : {}) },
       });
       return respuesta.data;
     } catch (error) {
@@ -50,36 +60,24 @@ export const photoService = {
     }
   },
 
-  obtenerFoto: async (id: number): Promise<ApiResponse<Photo>> => {
-    try {
-      const respuesta = await api.get<ApiResponse<Photo>>(`/fotografias/${id}`);
-      if (respuesta.data && respuesta.data.data) {
-        const foto = respuesta.data.data;
-        return {
-          ...respuesta.data,
-          data: {
-            ...foto,
-            idFoto: foto.idFoto,
-            idUsuario: foto.idUsuario,
-            nombreUsuario: foto.nombreUsuario,
-            url: foto.url,
-            descripcion: foto.descripcion,
-            fechaPublicacion: foto.fechaPublicacion,
-            userLiked: foto.userLiked,
-            likesCount: foto.likesCount,
-            commentsCount: foto.commentsCount,
-          },
-        };
-      }
+  obtenerFoto: async (id: number, idUsuario?: number): Promise<any> => {
+  try {
+    const respuesta = await api.get(`/fotografias/${id}`, {
+      params: idUsuario ? { idUsuario } : {},
+    });
+    // Si es un objeto directo (tu caso actual)
+    if (respuesta.data && respuesta.data.idFoto) {
       return respuesta.data;
-    } catch (error) {
-      return {
-        success: false,
-        message: 'No se pudo obtener el detalle de la foto.',
-      };
     }
-  },
-
+    // Si algún día devuelves {success, data: foto}
+    if (respuesta.data && respuesta.data.data) {
+      return respuesta.data.data;
+    }
+    return null;
+  } catch (error) {
+    return null;
+  }
+},
   subirFoto: async (datosFoto: PhotoCreateRequest & { idUsuario: number }): Promise<ApiResponse<Photo>> => {
     try {
       const formData = new FormData();
