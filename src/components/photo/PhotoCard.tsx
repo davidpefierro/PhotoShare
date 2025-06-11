@@ -13,17 +13,18 @@ const PhotoCard = ({ photo, onLike, onDelete }) => {
   const { user, isAuthenticated } = useAuthStore();
   const toggleLike = usePhotoStore((state) => state.toggleLike);
 
-  // Saca el nombre de usuario y avatar
-const username = photo.nombreUsuario || 'Usuario';
-const avatarLetter = username.charAt(0)?.toUpperCase() || 'U';
-  const userId = photo.usuario?.id_usuario;
+  // Usa el nombre de usuario y el id del usuario del backend directamente
+  const username = photo.nombreUsuario || 'Usuario';
+  const avatarLetter = username.charAt(0)?.toUpperCase() || 'U';
+  const userId = photo.idUsuario; // CORREGIDO: ahora usa el campo correcto de la API
+  const photoId = photo.idFoto;   // Usamos idFoto en vez de id_foto
 
-  const isOwnPhoto = user?.id === userId;
+  const isOwnPhoto = user?.id === userId || user?.idUsuario === userId;
 
   const handleLike = () => {
     if (!isAuthenticated) return;
-    toggleLike(photo.id_foto);
-    if (onLike) onLike(photo.id_foto);
+    toggleLike(photoId);
+    if (onLike) onLike(photoId);
   };
 
   const handleDelete = async () => {
@@ -31,8 +32,8 @@ const avatarLetter = username.charAt(0)?.toUpperCase() || 'U';
     if (!window.confirm('¿Estás seguro de que quieres eliminar esta foto?')) return;
     setIsDeleting(true);
     try {
-      const response = await photoService.deletePhoto(photo.id_foto);
-      if (response.success && onDelete) onDelete(photo.id_foto);
+      const response = await photoService.deletePhoto(photoId);
+      if (response.success && onDelete) onDelete(photoId);
       else alert('Error al eliminar la foto.');
     } catch {
       alert('Ha ocurrido un error al eliminar la foto');
@@ -49,8 +50,7 @@ const avatarLetter = username.charAt(0)?.toUpperCase() || 'U';
             {avatarLetter}
           </div>
           <div className="ml-3">
-             <p className="text-sm font-medium text-gray-900">@{username}</p>
-
+            <p className="text-sm font-medium text-gray-900">@{username}</p>
             <p className="text-xs text-gray-500">
               {photo.fecha_publicacion
                 ? formatDistanceToNow(new Date(photo.fecha_publicacion), { addSuffix: true, locale: es })
@@ -89,7 +89,7 @@ const avatarLetter = username.charAt(0)?.toUpperCase() || 'U';
           )}
         </div>
       </div>
-      <Link to={`/photos/${photo.id_foto}`}>
+      <Link to={`/fotografias/${photoId}`}>
         <img
           src={photo.url}
           alt={photo.descripcion || 'Foto'}
@@ -109,7 +109,7 @@ const avatarLetter = username.charAt(0)?.toUpperCase() || 'U';
             <span className="ml-1 text-sm">{photo.likesCount}</span>
           </button>
           <Link
-            to={`/photos/${photo.id_foto}`}
+            to={`/fotografias/${photoId}`}
             className="flex items-center text-gray-500 hover:text-primary-500"
           >
             <MessageCircle className="h-5 w-5" />
