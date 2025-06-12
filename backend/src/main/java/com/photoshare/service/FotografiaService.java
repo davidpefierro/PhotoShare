@@ -8,6 +8,9 @@ import com.photoshare.repository.ComentarioRepository;
 import com.photoshare.repository.FotografiaRepository;
 import com.photoshare.repository.MeGustaRepository;
 import com.photoshare.repository.UsuarioRepository;
+
+import jakarta.transaction.Transactional;
+
 import org.springframework.data.domain.PageRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -33,6 +36,7 @@ public class FotografiaService {
         this.fotografiaRepository = fotografiaRepository;
         this.usuarioRepository = usuarioRepository;
     }
+
 
     // Listar todas las fotos (paginado), con likesCount, userLiked y commentsCount
     public Page<FotografiaDTO> findAll(PageRequest pageRequest, Integer idUsuarioAutenticado) {
@@ -113,8 +117,14 @@ public class FotografiaService {
         return fotografiaRepository.save(fotografia);
     }
 
+    @Transactional
     public void delete(Integer idFoto) {
-        fotografiaRepository.deleteById(idFoto);
+    // Primero elimina los comentarios
+    comentarioRepository.deleteByIdFoto(idFoto);
+    // Después elimina los me gusta
+    meGustaRepository.deleteByIdFoto(idFoto);
+    // Finalmente elimina la foto
+    fotografiaRepository.deleteById(idFoto);
     }
 
     // Dar like a una foto

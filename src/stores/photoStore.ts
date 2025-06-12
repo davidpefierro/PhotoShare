@@ -73,7 +73,7 @@ export const usePhotoStore = create<PhotoState>()((set, get) => ({
   
   removePhoto: (id) => {
     set((state) => ({
-      photos: state.photos.filter((photo) => photo.id !== id),
+  photos: state.photos.filter(f => f.idFoto !== photoId)
     }));
   },
   

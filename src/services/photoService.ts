@@ -147,4 +147,17 @@ quitarLikeAFoto: async (idFoto: number, idUsuario: number) => {
       return { success: false };
     }
   },
+reportarFoto: async ({ idReportador, idDenunciado, motivo }) => {
+  try {
+    const res = await api.post('/reportes', {
+      idReportador,
+      idDenunciado,
+      motivo,
+      tipoContenido: 'Foto'
+    });
+    return res.data;
+  } catch (e) {
+    return { success: false, message: e?.response?.data?.message || 'Error desconocido' };
+  }
+},
 };

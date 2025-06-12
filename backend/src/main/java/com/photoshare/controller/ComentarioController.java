@@ -2,14 +2,10 @@ package com.photoshare.controller;
 
 import com.photoshare.dto.ComentarioCreateDTO;
 import com.photoshare.dto.ComentarioResponseDTO;
-import com.photoshare.model.Comentario;
-import com.photoshare.model.Usuario;
-import com.photoshare.repository.UsuarioRepository;
 import com.photoshare.service.ComentarioService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import java.time.LocalDateTime;
 import java.util.*;
 
 @RestController

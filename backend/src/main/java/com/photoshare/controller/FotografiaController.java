@@ -126,18 +126,18 @@ public class FotografiaController {
     }
 
     // Eliminar foto
-    @DeleteMapping("/{id}")
-    public ResponseEntity<?> eliminarFoto(@PathVariable Integer id) {
-        try {
-            fotografiaService.delete(id);
-            return ResponseEntity.ok(Map.of("success", true));
-        } catch (Exception e) {
-            e.printStackTrace();
-            return ResponseEntity.internalServerError().body(
-                    Map.of("success", false, "message", "Error al eliminar la foto")
-            );
-        }
+@DeleteMapping("/{id}")
+public ResponseEntity<?> eliminarFoto(@PathVariable Integer id) {
+    try {
+        fotografiaService.delete(id);
+        return ResponseEntity.ok(Map.of("success", true));
+    } catch (Exception e) {
+        e.printStackTrace();
+        return ResponseEntity.internalServerError().body(
+            Map.of("success", false, "message", "Error al eliminar la foto")
+        );
     }
+}
 
     @PostMapping("/{idFoto}/like")
     public ResponseEntity<?> darLike(@PathVariable Integer idFoto, @RequestBody Map<String, Integer> body) {

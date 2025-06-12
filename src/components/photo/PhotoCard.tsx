@@ -49,40 +49,67 @@ const PhotoCard = ({ photo, onLikeToggle, onDelete }) => {
       setIsLiking(false);
     }
   };
+  // Handle reportar
+  const handleReport = async () => {
+  if (!isAuthenticated) return;
+  const { value: motivo } = await Swal.fire({
+    title: 'Reportar foto',
+    input: 'textarea',
+    inputLabel: 'Motivo del reporte',
+    inputPlaceholder: 'Describe por qué reportas esta foto...',
+    inputAttributes: { 'aria-label': 'Motivo del reporte' },
+    showCancelButton: true,
+    confirmButtonText: 'Enviar reporte',
+    cancelButtonText: 'Cancelar',
+    inputValidator: value => !value && 'Por favor, escribe un motivo'
+  });
+
+  if (motivo) {
+    const response = await photoService.reportarFoto({
+      idReportador: user.idUsuario ?? user.id,
+      idDenunciado: userId,
+      motivo
+    });
+    if (response.success) {
+      await Swal.fire('¡Reporte enviado!', 'Gracias por ayudarnos a mantener la comunidad segura.', 'success');
+    } else {
+      await Swal.fire('Error', response.message || 'No se pudo enviar el reporte.', 'error');
+    }
+  }
+};
 
   // Delete handler con SweetAlert2
-  const handleDelete = async () => {
-    if (!isAuthenticated || !isOwnPhoto) return;
+const handleDelete = async () => {
+  if (!isAuthenticated || !isOwnPhoto) return;
 
-    const result = await Swal.fire({
-      title: '¿Eliminar la foto?',
-      text: 'Esta acción no se puede deshacer.',
-      icon: 'warning',
-      showCancelButton: true,
-      confirmButtonColor: '#e3342f',
-      cancelButtonColor: '#6c757d',
-      confirmButtonText: 'Sí, eliminar',
-      cancelButtonText: 'Cancelar',
-    });
+  const result = await Swal.fire({
+    title: '¿Eliminar la foto?',
+    text: 'Esta acción no se puede deshacer.',
+    icon: 'warning',
+    showCancelButton: true,
+    confirmButtonColor: '#e3342f',
+    cancelButtonColor: '#6c757d',
+    confirmButtonText: 'Sí, eliminar',
+    cancelButtonText: 'Cancelar',
+  });
 
-    if (result.isConfirmed) {
-      setIsDeleting(true);
-      try {
-        const response = await photoService.eliminarFoto(photoId);
-        if (response.success && onDelete) {
-          onDelete(photoId);
-          await Swal.fire('¡Eliminada!', 'La foto ha sido eliminada.', 'success');
-        } else {
-          await Swal.fire('Error', 'Error al eliminar la foto.', 'error');
-        }
-      } catch {
-        await Swal.fire('Error', 'Ha ocurrido un error al eliminar la foto.', 'error');
-      } finally {
-        setIsDeleting(false);
+  if (result.isConfirmed) {
+    setIsDeleting(true);
+    try {
+      const response = await photoService.eliminarFoto(photoId);
+      if (response && response.success) {
+        if (onDelete) onDelete(photoId);
+        await Swal.fire('¡Eliminada!', 'La foto ha sido eliminada.', 'success');
+      } else {
+        await Swal.fire('Error', response?.message || 'Error al eliminar la foto.', 'error');
       }
+    } catch (e) {
+      await Swal.fire('Error', 'Ha ocurrido un error al eliminar la foto.', 'error');
+    } finally {
+      setIsDeleting(false);
     }
-  };
-
+  }
+};
   return (
     <div className="bg-white rounded-lg shadow-md overflow-hidden animate-fade-in">
       <div className="p-4 flex items-center">
@@ -118,13 +145,16 @@ const PhotoCard = ({ photo, onLikeToggle, onDelete }) => {
                   {isDeleting ? 'Eliminando...' : 'Eliminar Foto'}
                 </button>
               ) : (
-                <button
-                  onClick={() => setShowActions(false)}
-                  className="flex items-center w-full px-4 py-2 text-sm text-left text-gray-700 hover:bg-gray-100"
-                >
-                  <Flag className="h-4 w-4 mr-2" />
-                  Reportar Foto
-                </button>
+  <button
+    onClick={() => {
+      setShowActions(false);
+      handleReport();
+    }}
+    className="flex items-center w-full px-4 py-2 text-sm text-left text-gray-700 hover:bg-gray-100"
+  >
+    <Flag className="h-4 w-4 mr-2" />
+    Reportar Foto
+  </button>
               )}
             </div>
           )}

@@ -7,4 +7,5 @@ import java.util.List;
 public interface ComentarioRepository extends JpaRepository<Comentario, Integer> {
     List<Comentario> findByIdFotoOrderByFechaPublicacionAsc(Integer idFoto);
     Long countByIdFoto(Integer idFoto);
+    void deleteByIdFoto(Integer idFoto);
 }
