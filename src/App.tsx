@@ -8,11 +8,12 @@ import Home from './pages/Home';
 import Login from './pages/Login';
 import Register from './pages/Register';
 import Upload from './pages/Upload';
-import MessagesPage from "./pages/MessagesPage";
 import ConversationPage from "./pages/ConversationPage";
 import AdminUsersPage from "./pages/AdminUsersPage";
 import ProfilePage from './pages/ProfilePage';
 import ProtectedAdminRoute from "./components/ProtectedAdminRoute";
+import BandejaMensajes from './pages/BandejaMensajes';
+import ChatPrivado from './pages/ChatPrivado';
 
 // Protected route component
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
@@ -72,20 +73,11 @@ function App() {
             />
             <Route
               path="/messages"
-              element={
-                <ProtectedRoute>
-                  <MessagesPage />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/mensajes/:idUsuario"
-              element={
-                <ProtectedRoute>
-                  <ConversationPage />
-                </ProtectedRoute>
-              }
-            />
+              element={<BandejaMensajes />} />
+
+            <Route path="/mensajes/chat/:idDestino"
+              element={<ChatPrivado />} />
+
             <Route
               path="/profile/:id"
               element={

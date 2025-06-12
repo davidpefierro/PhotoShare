@@ -1,7 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuthStore } from '../../stores/authStore';
-import { messageService } from '../../services/messageService';
 import { Camera, Heart, MessageCircle, User, LogOut, Settings, Bell, Menu, X } from 'lucide-react';
 import Button from '../ui/Button';
 
@@ -19,13 +18,18 @@ const Navbar = () => {
 
   useEffect(() => {
     const fetchUnreadCount = async () => {
-      if (isAuthenticated) {
-        const response = await messageService.getUnreadCount();
-        if (response.success && response.data) {
-          setUnreadMessages(response.data.count);
+      if (isAuthenticated && user?.idUsuario) {
+        try {
+          const res = await fetch(`http://localhost:8080/api/mensajes/conversaciones/${user.idUsuario}`);
+          const data = await res.json();
+          const count = data.filter((m) => m.estado === "No_visto" && m.idDestinatario === user.idUsuario).length;
+          setUnreadMessages(count);
+        } catch (err) {
+          console.error("Error al obtener mensajes no leídos:", err);
         }
       }
     };
+
 
     fetchUnreadCount();
     // Consultar nuevos mensajes cada 30 segundos
