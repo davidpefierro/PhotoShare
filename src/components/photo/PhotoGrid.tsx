@@ -5,16 +5,17 @@ import PhotoCard from './PhotoCard';
 import { Camera } from 'lucide-react';
 
 const PhotoGrid = () => {
-  const { photos, loading, hasMore, fetchPhotos, removePhoto } = usePhotoStore();
+  const { photos, loading, hasMore, fetchPhotos } = usePhotoStore();
 
   useEffect(() => {
-    if (photos.length === 0) {
-      fetchPhotos();
-    }
-  }, [fetchPhotos, photos.length]);
+    // Siempre recarga la primera página al montar el componente
+    fetchPhotos(true); // true = reset (opcional, depende de tu implementación)
+    // eslint-disable-next-line
+  }, []);
 
-  const handleDeletePhoto = (photoId) => {
-    removePhoto(photoId);
+  // Cuando se elimina, recarga la lista completa (opción 2)
+  const handleDeletePhoto = async () => {
+    await fetchPhotos(true); // true = reset
   };
 
   return (
@@ -52,7 +53,9 @@ const PhotoGrid = () => {
           <div className="flex flex-col gap-4">
             {photos
               .slice()
-              .sort((a, b) => new Date(b.fechaPublicacion) - new Date(a.fechaPublicacion))
+              .sort(
+                (a, b) => new Date(b.fechaPublicacion) - new Date(a.fechaPublicacion)
+              )
               .map(photo => (
                 <PhotoCard
                   key={photo.idFoto}

@@ -71,11 +71,11 @@ export const usePhotoStore = create<PhotoState>()((set, get) => ({
     }));
   },
   
-  removePhoto: (id) => {
-    set((state) => ({
-  photos: state.photos.filter(f => f.idFoto !== photoId)
-    }));
-  },
+removePhoto: (id) => {
+  set((state) => ({
+    photos: state.photos.filter(f => f.idFoto !== id)
+  }));
+},
   
  toggleLike: async (id) => {
   const photo = get().photos.find((p) => p.id === id);

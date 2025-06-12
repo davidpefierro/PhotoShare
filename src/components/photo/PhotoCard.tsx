@@ -98,7 +98,7 @@ const handleDelete = async () => {
     try {
       const response = await photoService.eliminarFoto(photoId);
       if (response && response.success) {
-        if (onDelete) onDelete(photoId);
+  if (onDelete) onDelete(photoId);
         await Swal.fire('¡Eliminada!', 'La foto ha sido eliminada.', 'success');
       } else {
         await Swal.fire('Error', response?.message || 'Error al eliminar la foto.', 'error');
