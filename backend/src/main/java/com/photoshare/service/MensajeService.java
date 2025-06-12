@@ -10,7 +10,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 import org.springframework.http.HttpStatus;
 
-import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -27,11 +28,14 @@ public class MensajeService {
     Usuario destinatario = usuarioRepository.findById(dto.getIdDestinatario().longValue())
         .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Destinatario no encontrado"));
 
+    // Aquí establecemos la zona horaria explícitamente
+    ZonedDateTime fechaEnvio = ZonedDateTime.now(ZoneId.of("Europe/Madrid"));
+
     Mensaje mensaje = Mensaje.builder()
         .remitente(remitente)
         .destinatario(destinatario)
         .contenido(dto.getContenido())
-        .fechaEnvio(LocalDateTime.now())
+        .fechaEnvio(fechaEnvio.toLocalDateTime()) // Guarda solo la parte local si tu modelo usa LocalDateTime
         .estado(Mensaje.Estado.No_visto)
         .build();
 

@@ -13,7 +13,8 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
-import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
 
 @Service
 @RequiredArgsConstructor
@@ -28,13 +29,16 @@ public class AuthService {
             throw new ResponseStatusException(HttpStatus.CONFLICT, "El usuario o correo ya existe");
         }
 
+        // Usa la zona horaria adecuada para España peninsular, por ejemplo
+        ZonedDateTime fechaRegistro = ZonedDateTime.now(ZoneId.of("Europe/Madrid"));
+
         Usuario usuario = Usuario.builder()
                 .nombre(request.getNombre())
                 .apellidos(request.getApellidos())
                 .nombreUsuario(request.getNombreUsuario())
                 .correo(request.getCorreo())
                 .contrasena(passwordEncoder.encode(request.getContrasena()))
-                .fechaRegistro(LocalDateTime.now())
+                .fechaRegistro(fechaRegistro.toLocalDateTime()) // Si tu modelo usa LocalDateTime
                 .rol(Usuario.Rol.Usuario)
                 .estado(Usuario.Estado.Activo)
                 .build();

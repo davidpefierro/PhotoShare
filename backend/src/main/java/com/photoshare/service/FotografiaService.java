@@ -13,7 +13,8 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.stereotype.Service;
 
-import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -96,7 +97,8 @@ public class FotografiaService {
     // Dar like a una foto
     public boolean likePhoto(Integer idFoto, Integer idUsuario) {
         if (!meGustaRepository.existsByIdFotoAndIdUsuario(idFoto, idUsuario)) {
-            MeGusta meGusta = new MeGusta(idUsuario, idFoto, LocalDateTime.now());
+            ZonedDateTime fechaLike = ZonedDateTime.now(ZoneId.of("Europe/Madrid"));
+            MeGusta meGusta = new MeGusta(idUsuario, idFoto, fechaLike.toLocalDateTime());
             meGustaRepository.save(meGusta);
             return true;
         }
