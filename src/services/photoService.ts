@@ -1,5 +1,5 @@
 import api from './api';
-import { Photo, PhotoCreateRequest, PageResponse, ApiResponse, Comment, CommentCreateRequest } from '../types';
+import { Photo, PhotoCreateRequest, PageResponse, ApiResponse } from '../types';
 
 // Puedes pasar el idUsuario autenticado a los métodos para que userLiked siempre sea correcto.
 export const photoService = {
@@ -61,23 +61,22 @@ export const photoService = {
   },
 
   obtenerFoto: async (id: number, idUsuario?: number): Promise<any> => {
-  try {
-    const respuesta = await api.get(`/fotografias/${id}`, {
-      params: idUsuario ? { idUsuario } : {},
-    });
-    // Si es un objeto directo (tu caso actual)
-    if (respuesta.data && respuesta.data.idFoto) {
-      return respuesta.data;
+    try {
+      const respuesta = await api.get(`/fotografias/${id}`, {
+        params: idUsuario ? { idUsuario } : {},
+      });
+      if (respuesta.data && respuesta.data.idFoto) {
+        return respuesta.data;
+      }
+      if (respuesta.data && respuesta.data.data) {
+        return respuesta.data.data;
+      }
+      return null;
+    } catch (error) {
+      return null;
     }
-    // Si algún día devuelves {success, data: foto}
-    if (respuesta.data && respuesta.data.data) {
-      return respuesta.data.data;
-    }
-    return null;
-  } catch (error) {
-    return null;
-  }
-},
+  },
+
   subirFoto: async (datosFoto: PhotoCreateRequest & { idUsuario: number }): Promise<ApiResponse<Photo>> => {
     try {
       const formData = new FormData();
@@ -111,60 +110,41 @@ export const photoService = {
     }
   },
 
-  darLikeAFoto: async (id: number, idUsuario: number): Promise<ApiResponse<{ liked: boolean, likesCount: number }>> => {
-    try {
-      const respuesta = await api.post<ApiResponse<{ liked: boolean, likesCount: number }>>(
-        `/fotografias/${id}/like?idUsuario=${idUsuario}`
-      );
-      return respuesta.data;
-    } catch (error) {
-      return {
-        success: false,
-        message: 'No se pudo dar like a la foto.',
-      };
-    }
-  },
-
-  quitarLikeAFoto: async (id: number, idUsuario: number): Promise<ApiResponse<{ liked: boolean, likesCount: number }>> => {
-    try {
-      const respuesta = await api.post<ApiResponse<{ liked: boolean, likesCount: number }>>(
-        `/fotografias/${id}/unlike?idUsuario=${idUsuario}`
-      );
-      return respuesta.data;
-    } catch (error) {
-      return {
-        success: false,
-        message: 'No se pudo quitar el like a la foto.',
-      };
-    }
-  },
+darLikeAFoto: async (idFoto: number, idUsuario: number) => {
+  const res = await api.post(`/fotografias/${idFoto}/like`, { idUsuario });
+  return { success: res.data.success, likesCount: res.data.likesCount };
+},
+quitarLikeAFoto: async (idFoto: number, idUsuario: number) => {
+  const res = await api.delete(`/fotografias/${idFoto}/like`, { data: { idUsuario } });
+  return { success: res.data.success, likesCount: res.data.likesCount };
+},
 
   // === COMENTARIOS ===
-  obtenerComentarios: async (idFoto: number): Promise<ApiResponse<Comment[]>> => {
+  obtenerComentarios: async (idFoto: number) => {
     try {
-      const respuesta = await api.get<ApiResponse<Comment[]>>(`/comentarios/foto/${idFoto}`);
-      return respuesta.data;
-    } catch (error) {
+      const res = await api.get(`/comentarios/foto/${idFoto}`);
       return {
-        success: false,
-        message: 'No se pudieron obtener los comentarios.',
+        success: res.data.success,
+        data: res.data.data
       };
+    } catch (error) {
+      return { success: false, data: [] };
     }
   },
 
-  subirComentario: async (idFoto: number, contenido: string): Promise<ApiResponse<Comment>> => {
+  subirComentario: async (idFoto: number, contenido: string, idUsuario: number) => {
     try {
-      const respuesta = await api.post<ApiResponse<Comment>>(`/comentarios`, {
+      const res = await api.post("/comentarios", {
         idFoto,
+        idUsuario,
         contenido,
-        // Puedes añadir idUsuario si tu backend lo requiere
       });
-      return respuesta.data;
-    } catch (error) {
       return {
-        success: false,
-        message: 'No se pudo subir el comentario.',
+        success: res.data.success,
+        data: res.data.data
       };
+    } catch (error) {
+      return { success: false };
     }
   },
 };

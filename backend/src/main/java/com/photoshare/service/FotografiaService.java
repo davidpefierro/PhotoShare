@@ -4,6 +4,7 @@ import com.photoshare.dto.FotografiaDTO;
 import com.photoshare.model.Fotografia;
 import com.photoshare.model.MeGusta;
 import com.photoshare.model.Usuario;
+import com.photoshare.repository.ComentarioRepository;
 import com.photoshare.repository.FotografiaRepository;
 import com.photoshare.repository.MeGustaRepository;
 import com.photoshare.repository.UsuarioRepository;
@@ -25,13 +26,15 @@ public class FotografiaService {
     private final UsuarioRepository usuarioRepository;
     @Autowired
     private MeGustaRepository meGustaRepository;
+    @Autowired
+    private ComentarioRepository comentarioRepository; // NUEVO: para contar comentarios
 
     public FotografiaService(FotografiaRepository fotografiaRepository, UsuarioRepository usuarioRepository) {
         this.fotografiaRepository = fotografiaRepository;
         this.usuarioRepository = usuarioRepository;
     }
 
-    // Listar todas las fotos (paginado), con likesCount y userLiked
+    // Listar todas las fotos (paginado), con likesCount, userLiked y commentsCount
     public Page<FotografiaDTO> findAll(PageRequest pageRequest, Integer idUsuarioAutenticado) {
         Page<Fotografia> fotos = fotografiaRepository.findAll(pageRequest);
         List<FotografiaDTO> dtos = fotos.stream().map(foto -> {
@@ -40,6 +43,7 @@ public class FotografiaService {
             int likesCount = meGustaRepository.countByIdFoto(foto.getIdFoto());
             boolean userLiked = idUsuarioAutenticado != null &&
                 meGustaRepository.existsByIdFotoAndIdUsuario(foto.getIdFoto(), idUsuarioAutenticado);
+            int commentsCount = comentarioRepository.countByIdFoto(foto.getIdFoto()).intValue(); // NUEVO
             return FotografiaDTO.builder()
                     .idFoto(foto.getIdFoto())
                     .url(foto.getUrl())
@@ -49,12 +53,13 @@ public class FotografiaService {
                     .nombreUsuario(nombreUsuario)
                     .likesCount(likesCount)
                     .userLiked(userLiked)
+                    .commentsCount(commentsCount) // NUEVO
                     .build();
         }).collect(Collectors.toList());
         return new PageImpl<>(dtos, pageRequest, fotos.getTotalElements());
     }
 
-    // Listar fotos de un usuario (por idUsuario), con likesCount y userLiked
+    // Listar fotos de un usuario (por idUsuario), con likesCount, userLiked y commentsCount
     public Page<FotografiaDTO> findByUsuario(Integer idUsuario, PageRequest pageRequest, Integer idUsuarioAutenticado) {
         Page<Fotografia> fotos = fotografiaRepository.findByIdUsuario(idUsuario, pageRequest);
         List<FotografiaDTO> dtos = fotos.stream().map(foto -> {
@@ -63,6 +68,7 @@ public class FotografiaService {
             int likesCount = meGustaRepository.countByIdFoto(foto.getIdFoto());
             boolean userLiked = idUsuarioAutenticado != null &&
                 meGustaRepository.existsByIdFotoAndIdUsuario(foto.getIdFoto(), idUsuarioAutenticado);
+            int commentsCount = comentarioRepository.countByIdFoto(foto.getIdFoto()).intValue(); // NUEVO
             return FotografiaDTO.builder()
                     .idFoto(foto.getIdFoto())
                     .url(foto.getUrl())
@@ -72,12 +78,13 @@ public class FotografiaService {
                     .nombreUsuario(nombreUsuario)
                     .likesCount(likesCount)
                     .userLiked(userLiked)
+                    .commentsCount(commentsCount) // NUEVO
                     .build();
         }).collect(Collectors.toList());
         return new PageImpl<>(dtos, pageRequest, fotos.getTotalElements());
     }
 
-    // Detalle de foto con likesCount y userLiked
+    // Detalle de foto con likesCount, userLiked y commentsCount
     public Optional<FotografiaDTO> findById(Integer id, Integer idUsuarioAutenticado) {
         Optional<Fotografia> fotoOpt = fotografiaRepository.findById(id);
         if (fotoOpt.isEmpty()) return Optional.empty();
@@ -87,6 +94,7 @@ public class FotografiaService {
         int likesCount = meGustaRepository.countByIdFoto(foto.getIdFoto());
         boolean userLiked = idUsuarioAutenticado != null &&
                 meGustaRepository.existsByIdFotoAndIdUsuario(foto.getIdFoto(), idUsuarioAutenticado);
+        int commentsCount = comentarioRepository.countByIdFoto(foto.getIdFoto()).intValue(); // NUEVO
         FotografiaDTO dto = FotografiaDTO.builder()
                 .idFoto(foto.getIdFoto())
                 .url(foto.getUrl())
@@ -96,6 +104,7 @@ public class FotografiaService {
                 .nombreUsuario(nombreUsuario)
                 .likesCount(likesCount)
                 .userLiked(userLiked)
+                .commentsCount(commentsCount) // NUEVO
                 .build();
         return Optional.of(dto);
     }

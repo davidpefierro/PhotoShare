@@ -139,24 +139,19 @@ public class FotografiaController {
         }
     }
 
-    @PostMapping("/{id}/like")
-    public ResponseEntity<?> likeFoto(@PathVariable Integer id, @RequestParam Integer idUsuario) {
-        boolean liked = fotografiaService.likePhoto(id, idUsuario);
-        int count = fotografiaService.likesCount(id);
-        return ResponseEntity.ok(Map.of("liked", true, "likesCount", count));
+    @PostMapping("/{idFoto}/like")
+    public ResponseEntity<?> darLike(@PathVariable Integer idFoto, @RequestBody Map<String, Integer> body) {
+        Integer idUsuario = body.get("idUsuario");
+        boolean liked = fotografiaService.likePhoto(idFoto, idUsuario);
+        int likesCount = fotografiaService.likesCount(idFoto);
+        return ResponseEntity.ok(Map.of("success", true, "liked", liked, "likesCount", likesCount));
     }
 
-    @PostMapping("/{id}/unlike")
-    public ResponseEntity<?> unlikeFoto(@PathVariable Integer id, @RequestParam Integer idUsuario) {
-        boolean unliked = fotografiaService.unlikePhoto(id, idUsuario);
-        int count = fotografiaService.likesCount(id);
-        return ResponseEntity.ok(Map.of("liked", false, "likesCount", count));
-    }
-
-    @GetMapping("/{id}/likes")
-    public ResponseEntity<?> getLikes(@PathVariable Integer id, @RequestParam Integer idUsuario) {
-        boolean liked = fotografiaService.userLiked(id, idUsuario);
-        int count = fotografiaService.likesCount(id);
-        return ResponseEntity.ok(Map.of("liked", liked, "likesCount", count));
+    @DeleteMapping("/{idFoto}/like")
+    public ResponseEntity<?> quitarLike(@PathVariable Integer idFoto, @RequestBody Map<String, Integer> body) {
+        Integer idUsuario = body.get("idUsuario");
+        boolean unliked = fotografiaService.unlikePhoto(idFoto, idUsuario);
+        int likesCount = fotografiaService.likesCount(idFoto);
+        return ResponseEntity.ok(Map.of("success", true, "unliked", unliked, "likesCount", likesCount));
     }
 }

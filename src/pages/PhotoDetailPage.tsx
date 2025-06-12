@@ -64,19 +64,23 @@ const PhotoDetailPage = () => {
     }
   };
 
-  const handleCommentSubmit = async (e) => {
-    e.preventDefault();
-    if (!commentText.trim() || !isAuthenticated) return;
-    setCommentLoading(true);
-    if (photoService.subirComentario) {
-      const res = await photoService.subirComentario(Number(id), commentText);
-      if (res.success) {
-        setComments((prev) => [...prev, res.data]);
-        setCommentText("");
-      }
+const handleCommentSubmit = async (e) => {
+  e.preventDefault();
+  if (!commentText.trim() || !isAuthenticated) return;
+  setCommentLoading(true);
+  if (photoService.subirComentario) {
+    const res = await photoService.subirComentario(
+      Number(id),
+      commentText,
+      user.idUsuario ?? user.id
+    );
+    if (res.success) {
+      setComments((prev) => [...prev, res.data]);
+      setCommentText("");
     }
-    setCommentLoading(false);
-  };
+  }
+  setCommentLoading(false);
+};
 
   if (loading) return <div className="p-8">Cargando...</div>;
   if (!photo) return <div className="p-8">Foto no encontrada.</div>;

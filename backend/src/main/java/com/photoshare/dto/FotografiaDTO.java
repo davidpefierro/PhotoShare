@@ -15,4 +15,5 @@ public class FotografiaDTO {
     private String nombreUsuario;
     private Integer likesCount;
     private Boolean userLiked;
+    private Integer commentsCount;
 }

@@ -32,7 +32,29 @@ const Home = () => {
       navigate('/register');
     }
   };
-
+  // Handlers para like/unlike
+ const handleLike = async (idFoto, userLiked) => {
+  if (!isAuthenticated) return;
+  let result;
+  if (userLiked) {
+    result = await photoService.quitarLikeAFoto(idFoto, user.idUsuario ?? user.id);
+  } else {
+    result = await photoService.darLikeAFoto(idFoto, user.idUsuario ?? user.id);
+  }
+  if (result.success) {
+    setPhotos(photos =>
+      photos.map(photo =>
+        photo.idFoto === idFoto
+          ? {
+              ...photo,
+              userLiked: !userLiked,
+              likesCount: result.likesCount,
+            }
+          : photo
+      )
+    );
+  }
+};
   return (
     <div>
       {/* Hero/landing solo para no autenticados */}
@@ -142,11 +164,16 @@ const Home = () => {
       {/* Feed de fotos con paginación */}
       <div className="container mx-auto px-4 py-8">
         <div className="max-w-2xl mx-auto">
-          <div className="flex flex-col gap-4">
-            {photos.map(photo => (
-              <PhotoCard key={photo.idFoto} photo={photo} />
-            ))}
-          </div>
+      <div className="flex flex-col gap-4">
+        {photos.map(photo => (
+          <PhotoCard
+            key={photo.idFoto}
+            photo={photo}
+            onLikeToggle={() => handleLike(photo.idFoto, photo.userLiked)}
+            isAuthenticated={isAuthenticated}
+          />
+        ))}
+      </div>
           {/* Paginación */}
           <div className="flex justify-center mt-8 gap-2">
             <Button

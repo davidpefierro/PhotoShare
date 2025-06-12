@@ -3,10 +3,12 @@ import { Link } from 'react-router-dom';
 import { formatDistanceToNow } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { Heart, MessageCircle, MoreHorizontal, Flag, Trash2 } from 'lucide-react';
+import Swal from 'sweetalert2';
+import 'sweetalert2/dist/sweetalert2.min.css';
 import { useAuthStore } from '../../stores/authStore';
 import { photoService } from '../../services/photoService';
 
-const PhotoCard = ({ photo, onLike, onDelete }) => {
+const PhotoCard = ({ photo, onLikeToggle, onDelete }) => {
   const { user, isAuthenticated } = useAuthStore();
 
   // Estado local para MG y contador de likes
@@ -22,44 +24,62 @@ const PhotoCard = ({ photo, onLike, onDelete }) => {
   const photoId = photo.idFoto;
   const isOwnPhoto = user?.id === userId || user?.idUsuario === userId;
 
+  // Like/Unlike handler
   const handleLike = async () => {
     if (!isAuthenticated) return;
+    if (isLiking) return;
     setIsLiking(true);
+    let result;
     try {
       if (userLiked) {
-        // Quitar MG
-        const res = await photoService.quitarLikeAFoto(photoId, user.idUsuario ?? user.id);
-        if (res.success) {
-          setUserLiked(false);
-          setLikesCount(res.likesCount);
-          if (onLike) onLike(photoId, false, res.likesCount);
-        }
+        result = await photoService.quitarLikeAFoto(photoId, user.idUsuario ?? user.id);
       } else {
-        // Dar MG
-        const res = await photoService.darLikeAFoto(photoId, user.idUsuario ?? user.id);
-        if (res.success) {
-          setUserLiked(true);
-          setLikesCount(res.likesCount);
-          if (onLike) onLike(photoId, true, res.likesCount);
+        result = await photoService.darLikeAFoto(photoId, user.idUsuario ?? user.id);
+      }
+      if (result.success) {
+        setUserLiked(!userLiked);
+        setLikesCount(result.likesCount);
+        if (onLikeToggle) {
+          onLikeToggle(photoId, !userLiked, result.likesCount);
         }
       }
+    } catch (e) {
+      await Swal.fire('Error', 'No se pudo actualizar el like.', 'error');
     } finally {
       setIsLiking(false);
     }
   };
 
+  // Delete handler con SweetAlert2
   const handleDelete = async () => {
     if (!isAuthenticated || !isOwnPhoto) return;
-    if (!window.confirm('¿Estás seguro de que quieres eliminar esta foto?')) return;
-    setIsDeleting(true);
-    try {
-      const response = await photoService.eliminarFoto(photoId);
-      if (response.success && onDelete) onDelete(photoId);
-      else alert('Error al eliminar la foto.');
-    } catch {
-      alert('Ha ocurrido un error al eliminar la foto');
-    } finally {
-      setIsDeleting(false);
+
+    const result = await Swal.fire({
+      title: '¿Eliminar la foto?',
+      text: 'Esta acción no se puede deshacer.',
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#e3342f',
+      cancelButtonColor: '#6c757d',
+      confirmButtonText: 'Sí, eliminar',
+      cancelButtonText: 'Cancelar',
+    });
+
+    if (result.isConfirmed) {
+      setIsDeleting(true);
+      try {
+        const response = await photoService.eliminarFoto(photoId);
+        if (response.success && onDelete) {
+          onDelete(photoId);
+          await Swal.fire('¡Eliminada!', 'La foto ha sido eliminada.', 'success');
+        } else {
+          await Swal.fire('Error', 'Error al eliminar la foto.', 'error');
+        }
+      } catch {
+        await Swal.fire('Error', 'Ha ocurrido un error al eliminar la foto.', 'error');
+      } finally {
+        setIsDeleting(false);
+      }
     }
   };
 
