@@ -14,30 +14,20 @@ import ProfilePage from './pages/ProfilePage';
 import ProtectedAdminRoute from "./components/ProtectedAdminRoute";
 import BandejaMensajes from './pages/BandejaMensajes';
 import ChatPrivado from './pages/ChatPrivado';
+import PhotoDetailPage from './pages/PhotoDetailPage';
 
 // Protected route component
-const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
+const ProtectedRoute = ({ children }) => {
   const { isAuthenticated } = useAuthStore();
-
-  if (!isAuthenticated) {
-    return <Navigate to="/login" />;
-  }
-
+  if (!isAuthenticated) return <Navigate to="/login" />;
   return <>{children}</>;
 };
 
 // Admin route component
-const AdminRoute = ({ children }: { children: React.ReactNode }) => {
+const AdminRoute = ({ children }) => {
   const { isAuthenticated, isAdmin } = useAuthStore();
-
-  if (!isAuthenticated) {
-    return <Navigate to="/login" />;
-  }
-
-  if (!isAdmin) {
-    return <Navigate to="/" />;
-  }
-
+  if (!isAuthenticated) return <Navigate to="/login" />;
+  if (!isAdmin) return <Navigate to="/" />;
   return <>{children}</>;
 };
 
@@ -86,6 +76,9 @@ function App() {
                 </ProtectedRoute>
               }
             />
+
+            {/* Photo Detail Route - AÑADE ESTA RUTA */}
+            <Route path="/fotografias/:id" element={<PhotoDetailPage />} />
             {/* Fallback route */}
             <Route path="*" element={<Navigate to="/" />} />
           </Routes>

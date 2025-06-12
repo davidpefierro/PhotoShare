@@ -12,8 +12,8 @@ public class FotografiaDTO {
     private String descripcion;
     private String fechaPublicacion;
     private Integer idUsuario;
-    private String nombreUsuario; // <-- Este campo es el alias del usuario
-
-    // Si quieres devolver el usuario como objeto anidado, puedes hacer:
-    // private UsuarioDTO usuario;
+    private String nombreUsuario;
+    private Integer likesCount;
+    private Boolean userLiked;
+    private Integer commentsCount;
 }

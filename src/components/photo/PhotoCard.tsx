@@ -3,44 +3,113 @@ import { Link } from 'react-router-dom';
 import { formatDistanceToNow } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { Heart, MessageCircle, MoreHorizontal, Flag, Trash2 } from 'lucide-react';
+import Swal from 'sweetalert2';
+import 'sweetalert2/dist/sweetalert2.min.css';
 import { useAuthStore } from '../../stores/authStore';
-import { usePhotoStore } from '../../stores/photoStore';
 import { photoService } from '../../services/photoService';
 
-const PhotoCard = ({ photo, onLike, onDelete }) => {
+const PhotoCard = ({ photo, onLikeToggle, onDelete }) => {
+  const { user, isAuthenticated } = useAuthStore();
+
+  // Estado local para MG y contador de likes
+  const [userLiked, setUserLiked] = useState(photo.userLiked);
+  const [likesCount, setLikesCount] = useState(photo.likesCount ?? 0);
+  const [isLiking, setIsLiking] = useState(false);
   const [showActions, setShowActions] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
-  const { user, isAuthenticated } = useAuthStore();
-  const toggleLike = usePhotoStore((state) => state.toggleLike);
 
-  // Saca el nombre de usuario y avatar
-const username = photo.nombreUsuario || 'Usuario';
-const avatarLetter = username.charAt(0)?.toUpperCase() || 'U';
-  const userId = photo.usuario?.id_usuario;
+  const username = photo.nombreUsuario || 'Usuario';
+  const avatarLetter = username.charAt(0)?.toUpperCase() || 'U';
+  const userId = photo.idUsuario;
+  const photoId = photo.idFoto;
+  const isOwnPhoto = user?.id === userId || user?.idUsuario === userId;
 
-  const isOwnPhoto = user?.id === userId;
-
-  const handleLike = () => {
+  // Like/Unlike handler
+  const handleLike = async () => {
     if (!isAuthenticated) return;
-    toggleLike(photo.id_foto);
-    if (onLike) onLike(photo.id_foto);
+    if (isLiking) return;
+    setIsLiking(true);
+    let result;
+    try {
+      if (userLiked) {
+        result = await photoService.quitarLikeAFoto(photoId, user.idUsuario ?? user.id);
+      } else {
+        result = await photoService.darLikeAFoto(photoId, user.idUsuario ?? user.id);
+      }
+      if (result.success) {
+        setUserLiked(!userLiked);
+        setLikesCount(result.likesCount);
+        if (onLikeToggle) {
+          onLikeToggle(photoId, !userLiked, result.likesCount);
+        }
+      }
+    } catch (e) {
+      await Swal.fire('Error', 'No se pudo actualizar el like.', 'error');
+    } finally {
+      setIsLiking(false);
+    }
   };
+  // Handle reportar
+  const handleReport = async () => {
+  if (!isAuthenticated) return;
+  const { value: motivo } = await Swal.fire({
+    title: 'Reportar foto',
+    input: 'textarea',
+    inputLabel: 'Motivo del reporte',
+    inputPlaceholder: 'Describe por qué reportas esta foto...',
+    inputAttributes: { 'aria-label': 'Motivo del reporte' },
+    showCancelButton: true,
+    confirmButtonText: 'Enviar reporte',
+    cancelButtonText: 'Cancelar',
+    inputValidator: value => !value && 'Por favor, escribe un motivo'
+  });
 
-  const handleDelete = async () => {
-    if (!isAuthenticated || !isOwnPhoto) return;
-    if (!window.confirm('¿Estás seguro de que quieres eliminar esta foto?')) return;
+  if (motivo) {
+    const response = await photoService.reportarFoto({
+      idReportador: user.idUsuario ?? user.id,
+      idDenunciado: userId,
+      motivo
+    });
+    if (response.success) {
+      await Swal.fire('¡Reporte enviado!', 'Gracias por ayudarnos a mantener la comunidad segura.', 'success');
+    } else {
+      await Swal.fire('Error', response.message || 'No se pudo enviar el reporte.', 'error');
+    }
+  }
+};
+
+  // Delete handler con SweetAlert2
+const handleDelete = async () => {
+  if (!isAuthenticated || !isOwnPhoto) return;
+
+  const result = await Swal.fire({
+    title: '¿Eliminar la foto?',
+    text: 'Esta acción no se puede deshacer.',
+    icon: 'warning',
+    showCancelButton: true,
+    confirmButtonColor: '#e3342f',
+    cancelButtonColor: '#6c757d',
+    confirmButtonText: 'Sí, eliminar',
+    cancelButtonText: 'Cancelar',
+  });
+
+  if (result.isConfirmed) {
     setIsDeleting(true);
     try {
-      const response = await photoService.deletePhoto(photo.id_foto);
-      if (response.success && onDelete) onDelete(photo.id_foto);
-      else alert('Error al eliminar la foto.');
-    } catch {
-      alert('Ha ocurrido un error al eliminar la foto');
+      const response = await photoService.eliminarFoto(photoId);
+      if (response && response.success) {
+  if (onDelete) onDelete(photoId);
+        await Swal.fire('¡Eliminada!', 'La foto ha sido eliminada.', 'success');
+      } else {
+        await Swal.fire('Error', response?.message || 'Error al eliminar la foto.', 'error');
+      }
+    } catch (e) {
+      await Swal.fire('Error', 'Ha ocurrido un error al eliminar la foto.', 'error');
     } finally {
       setIsDeleting(false);
     }
-  };
-
+  }
+};
   return (
     <div className="bg-white rounded-lg shadow-md overflow-hidden animate-fade-in">
       <div className="p-4 flex items-center">
@@ -49,11 +118,10 @@ const avatarLetter = username.charAt(0)?.toUpperCase() || 'U';
             {avatarLetter}
           </div>
           <div className="ml-3">
-             <p className="text-sm font-medium text-gray-900">@{username}</p>
-
+            <p className="text-sm font-medium text-gray-900">@{username}</p>
             <p className="text-xs text-gray-500">
-              {photo.fecha_publicacion
-                ? formatDistanceToNow(new Date(photo.fecha_publicacion), { addSuffix: true, locale: es })
+              {photo.fechaPublicacion
+                ? formatDistanceToNow(new Date(photo.fechaPublicacion), { addSuffix: true, locale: es })
                 : ''}
             </p>
           </div>
@@ -77,23 +145,27 @@ const avatarLetter = username.charAt(0)?.toUpperCase() || 'U';
                   {isDeleting ? 'Eliminando...' : 'Eliminar Foto'}
                 </button>
               ) : (
-                <button
-                  onClick={() => setShowActions(false)}
-                  className="flex items-center w-full px-4 py-2 text-sm text-left text-gray-700 hover:bg-gray-100"
-                >
-                  <Flag className="h-4 w-4 mr-2" />
-                  Reportar Foto
-                </button>
+  <button
+    onClick={() => {
+      setShowActions(false);
+      handleReport();
+    }}
+    className="flex items-center w-full px-4 py-2 text-sm text-left text-gray-700 hover:bg-gray-100"
+  >
+    <Flag className="h-4 w-4 mr-2" />
+    Reportar Foto
+  </button>
               )}
             </div>
           )}
         </div>
       </div>
-      <Link to={`/photos/${photo.id_foto}`}>
+      {/* Imagen clickable (detalle) */}
+      <Link to={`/fotografias/${photoId}`}>
         <img
           src={photo.url}
           alt={photo.descripcion || 'Foto'}
-          className="w-full object-cover h-64 sm:h-96"
+          className="w-full object-cover h-64 sm:h-96 cursor-pointer"
           loading="lazy"
         />
       </Link>
@@ -101,19 +173,22 @@ const avatarLetter = username.charAt(0)?.toUpperCase() || 'U';
         <div className="flex items-center">
           <button
             onClick={handleLike}
+            disabled={isLiking}
             className={`flex items-center mr-4 ${
-              photo.userLiked ? 'text-accent-500' : 'text-gray-500 hover:text-accent-500'
+              userLiked ? 'text-accent-500' : 'text-gray-500 hover:text-accent-500'
             }`}
+            aria-label={userLiked ? 'Quitar me gusta' : 'Dar me gusta'}
           >
-            <Heart className={`h-5 w-5 ${photo.userLiked ? 'fill-current' : ''}`} />
-            <span className="ml-1 text-sm">{photo.likesCount}</span>
+            <Heart className={`h-5 w-5 ${userLiked ? 'fill-current' : ''}`} />
+            <span className="ml-1 text-sm">{likesCount}</span>
           </button>
+          {/* Comentarios: también clickable */}
           <Link
-            to={`/photos/${photo.id_foto}`}
+            to={`/fotografias/${photoId}`}
             className="flex items-center text-gray-500 hover:text-primary-500"
           >
             <MessageCircle className="h-5 w-5" />
-            <span className="ml-1 text-sm">{photo.commentsCount}</span>
+            <span className="ml-1 text-sm">{photo.commentsCount ?? 0}</span>
           </Link>
         </div>
         {photo.descripcion && (
