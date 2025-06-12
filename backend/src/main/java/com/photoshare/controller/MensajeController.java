@@ -38,4 +38,11 @@ public class MensajeController {
     mensajeService.marcarComoVisto(idMensaje);
     return ResponseEntity.noContent().build();
   }
+
+  @DeleteMapping("/{idMensaje}")
+  public ResponseEntity<Void> eliminarMensaje(@PathVariable Long idMensaje) {
+    mensajeService.eliminarMensaje(idMensaje);
+    return ResponseEntity.noContent().build();
+  }
+
 }

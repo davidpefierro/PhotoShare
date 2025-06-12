@@ -1,11 +1,14 @@
 import React, { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { useAuthStore } from "../stores/authStore";
 
 export default function BandejaMensajes() {
   const usuarioActual = useAuthStore((state) => state.user);
   const [conversaciones, setConversaciones] = useState([]);
   const [usuarios, setUsuarios] = useState({});
+  const [usuariosDisponibles, setUsuariosDisponibles] = useState([]);
+  const [destinoSeleccionado, setDestinoSeleccionado] = useState("");
+  const navigate = useNavigate();
 
   useEffect(() => {
     fetch(`http://localhost:8080/api/mensajes/conversaciones/${usuarioActual.idUsuario}`)
@@ -13,14 +16,12 @@ export default function BandejaMensajes() {
       .then(data => {
         setConversaciones(data);
 
-        // Obtener IDs únicos de otros usuarios
         const ids = Array.from(new Set(
           data.map(msg =>
             msg.idRemitente === usuarioActual.idUsuario ? msg.idDestinatario : msg.idRemitente
           )
         ));
 
-        // Solo pedir los que no tengamos ya
         ids.forEach(id => {
           if (!usuarios[id]) {
             fetch(`http://localhost:8080/api/usuarios/${id}`)
@@ -32,12 +33,49 @@ export default function BandejaMensajes() {
         });
       })
       .catch(err => console.error("Error cargando conversaciones:", err));
-    // eslint-disable-next-line
-  }, [usuarioActual.idUsuario]); // No poner usuarios en deps para evitar bucles
+
+    // Cargar todos los usuarios disponibles para nuevo mensaje y excluir el usuario actual
+    fetch(`http://localhost:8080/api/usuarios?idActual=${usuarioActual.idUsuario}`)
+      .then(res => res.json())
+      .then(data => {
+        const filtrados = data.filter(u => u.idUsuario !== usuarioActual.idUsuario);
+        setUsuariosDisponibles(filtrados);
+      })
+      .catch(err => console.error("Error al obtener usuarios disponibles:", err));
+  }, [usuarioActual.idUsuario]);
+
+  const iniciarConversacion = (e) => {
+    e.preventDefault();
+    if (destinoSeleccionado) {
+      navigate(`/mensajes/chat/${destinoSeleccionado}`);
+    }
+  };
 
   return (
     <div className="max-w-2xl mx-auto p-4">
       <h1 className="text-2xl font-bold mb-4">Mensajes</h1>
+
+      <form onSubmit={iniciarConversacion} className="mb-6 flex gap-2 items-center">
+        <select
+          value={destinoSeleccionado}
+          onChange={(e) => setDestinoSeleccionado(e.target.value)}
+          className="border px-3 py-2 rounded w-full"
+        >
+          <option value="">-- Enviar mensaje a... --</option>
+          {usuariosDisponibles.map(u => (
+            <option key={u.idUsuario} value={u.idUsuario}>
+              @{u.nombreUsuario} ({u.nombre})
+            </option>
+          ))}
+        </select>
+        <button
+          type="submit"
+          className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
+        >
+          Ir
+        </button>
+      </form>
+
       {conversaciones.length === 0 ? (
         <p>No tienes conversaciones aún.</p>
       ) : (
@@ -49,7 +87,7 @@ export default function BandejaMensajes() {
               <li key={msg.idMensaje} className="border p-4 rounded shadow-sm bg-white">
                 <Link to={`/mensajes/chat/${otroId}`} className="block">
                   <div className="font-semibold">
-                    @{usuarios[otroId] ? usuarios[otroId] : `Usuario #${otroId}`}{" "}
+                    @{usuarios[otroId] ? usuarios[otroId] : `Usuario #${otroId}`} {" "}
                     {esNoVisto && <span className="text-red-500">●</span>}
                   </div>
                   <div className="text-gray-700 line-clamp-1">{msg.contenido}</div>
