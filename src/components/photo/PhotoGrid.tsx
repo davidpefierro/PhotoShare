@@ -1,6 +1,7 @@
 import { useEffect } from 'react';
 import InfiniteScroll from 'react-infinite-scroll-component';
 import { usePhotoStore } from '../../stores/photoStore';
+import { photoService } from '../services/photoService'; // Ajusta la ruta si es diferente
 import PhotoCard from './PhotoCard';
 import { Camera } from 'lucide-react';
 
@@ -17,6 +18,11 @@ const PhotoGrid = () => {
   const handleDeletePhoto = async () => {
     await fetchPhotos(true); // true = reset
   };
+
+  // ORDENAR por fechaPublicacion DESCENDENTE (más nuevas primero)
+  const orderedPhotos = photos.slice().sort(
+    (a, b) => new Date(b.fechaPublicacion) - new Date(a.fechaPublicacion)
+  );
 
   return (
     <>
@@ -51,18 +57,13 @@ const PhotoGrid = () => {
           }
         >
           <div className="flex flex-col gap-4">
-            {photos
-              .slice()
-              .sort(
-                (a, b) => new Date(b.fechaPublicacion) - new Date(a.fechaPublicacion)
-              )
-              .map(photo => (
-                <PhotoCard
-                  key={photo.idFoto}
-                  photo={photo}
-                  onDelete={handleDeletePhoto}
-                />
-              ))}
+            {orderedPhotos.map(photo => (
+              <PhotoCard
+                key={photo.idFoto}
+                photo={photo}
+                onDelete={handleDeletePhoto}
+              />
+            ))}
           </div>
         </InfiniteScroll>
       )}

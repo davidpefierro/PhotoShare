@@ -23,9 +23,9 @@ public class MensajeService {
   private final UsuarioRepository usuarioRepository;
 
   public void enviarMensaje(MensajeDTO dto) {
-    Usuario remitente = usuarioRepository.findById(dto.getIdRemitente().longValue())
+    Usuario remitente = usuarioRepository.findById(dto.getIdRemitente())
         .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Remitente no encontrado"));
-    Usuario destinatario = usuarioRepository.findById(dto.getIdDestinatario().longValue())
+    Usuario destinatario = usuarioRepository.findById(dto.getIdDestinatario())
         .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Destinatario no encontrado"));
 
     // Aquí establecemos la zona horaria explícitamente

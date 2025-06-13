@@ -1,4 +1,5 @@
 import api from './api';
+import axios from 'axios';
 import { Photo, PhotoCreateRequest, PageResponse, ApiResponse } from '../types';
 
 // Puedes pasar el idUsuario autenticado a los métodos para que userLiked siempre sea correcto.
@@ -110,14 +111,16 @@ export const photoService = {
     }
   },
 
-darLikeAFoto: async (idFoto: number, idUsuario: number) => {
-  const res = await api.post(`/fotografias/${idFoto}/like`, { idUsuario });
-  return { success: res.data.success, likesCount: res.data.likesCount };
-},
-quitarLikeAFoto: async (idFoto: number, idUsuario: number) => {
-  const res = await api.delete(`/fotografias/${idFoto}/like`, { data: { idUsuario } });
-  return { success: res.data.success, likesCount: res.data.likesCount };
-},
+  darLikeAFoto: async (idFoto, idUsuario) => {
+    const res = await api.post(`/fotografias/${idFoto}/like`, { idUsuario });
+
+    return { success: res.data.success, likesCount: res.data.likesCount };
+  },
+  quitarLikeAFoto: async (idFoto, idUsuario) => {
+    const res = await api.delete(`/fotografias/${idFoto}/like`, { params: { idUsuario } });
+    console.log("Quitar like: idFoto=" + idFoto + ", idUsuario=" + idUsuario);
+    return { success: res.data.success, likesCount: res.data.likesCount };
+  },
 
   // === COMENTARIOS ===
   obtenerComentarios: async (idFoto: number) => {
@@ -147,17 +150,17 @@ quitarLikeAFoto: async (idFoto: number, idUsuario: number) => {
       return { success: false };
     }
   },
-reportarFoto: async ({ idReportador, idDenunciado, motivo }) => {
-  try {
-    const res = await api.post('/reportes', {
-      idReportador,
-      idDenunciado,
-      motivo,
-      tipoContenido: 'Foto'
-    });
-    return res.data;
-  } catch (e) {
-    return { success: false, message: e?.response?.data?.message || 'Error desconocido' };
-  }
-},
+  reportarFoto: async ({ idReportador, idDenunciado, motivo }) => {
+    try {
+      const res = await api.post('/reportes', {
+        idReportador,
+        idDenunciado,
+        motivo,
+        tipoContenido: 'Foto'
+      });
+      return res.data;
+    } catch (e) {
+      return { success: false, message: e?.response?.data?.message || 'Error desconocido' };
+    }
+  },
 };

@@ -1,14 +1,15 @@
 package com.photoshare.controller;
 
+import com.photoshare.service.FotografiaService;
 import com.photoshare.model.Fotografia;
 import com.photoshare.model.Usuario;
 import com.photoshare.repository.UsuarioRepository;
-import com.photoshare.service.FotografiaService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.data.domain.Sort;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -30,6 +31,13 @@ public class FotografiaController {
     @Autowired
     private UsuarioRepository usuarioRepository;
 
+    // Nuevo endpoint: Listar todas las fotos ordenadas por fecha_publicacion DESC
+    // (más nuevas primero)
+    @GetMapping("/todas-ordenadas")
+    public ResponseEntity<?> listarTodasOrdenadas() {
+        return ResponseEntity.ok(fotografiaService.obtenerFotosOrdenadasPorFecha());
+    }
+
     // Listar todas las fotos (paginado) con idUsuario opcional
     @GetMapping("")
     public ResponseEntity<?> listarPaginado(
@@ -37,7 +45,9 @@ public class FotografiaController {
             @RequestParam(defaultValue = "10") int size,
             @RequestParam(required = false) Integer idUsuario // usuario autenticado opcional
     ) {
-        return ResponseEntity.ok(fotografiaService.findAll(PageRequest.of(page, size), idUsuario));
+        // NUEVO: PageRequest con orden DESC por fechaPublicacion
+        PageRequest pageRequest = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "fechaPublicacion"));
+        return ResponseEntity.ok(fotografiaService.findAll(pageRequest, idUsuario));
     }
 
     // Listar fotos de un usuario por ID con idUsuarioAuth opcional
@@ -117,24 +127,22 @@ public class FotografiaController {
             System.out.println("Error real al subir la foto:");
             e.printStackTrace();
             return ResponseEntity.internalServerError().body(
-                    Map.of("success", false, "message", "No se pudo subir la foto.")
-            );
+                    Map.of("success", false, "message", "No se pudo subir la foto."));
         }
     }
 
     // Eliminar foto
-@DeleteMapping("/{id}")
-public ResponseEntity<?> eliminarFoto(@PathVariable Integer id) {
-    try {
-        fotografiaService.delete(id);
-        return ResponseEntity.ok(Map.of("success", true));
-    } catch (Exception e) {
-        e.printStackTrace();
-        return ResponseEntity.internalServerError().body(
-            Map.of("success", false, "message", "Error al eliminar la foto")
-        );
+    @DeleteMapping("/{id}")
+    public ResponseEntity<?> eliminarFoto(@PathVariable Integer id) {
+        try {
+            fotografiaService.delete(id);
+            return ResponseEntity.ok(Map.of("success", true));
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.internalServerError().body(
+                    Map.of("success", false, "message", "Error al eliminar la foto"));
+        }
     }
-}
 
     @PostMapping("/{idFoto}/like")
     public ResponseEntity<?> darLike(@PathVariable Integer idFoto, @RequestBody Map<String, Integer> body) {
@@ -145,8 +153,10 @@ public ResponseEntity<?> eliminarFoto(@PathVariable Integer id) {
     }
 
     @DeleteMapping("/{idFoto}/like")
-    public ResponseEntity<?> quitarLike(@PathVariable Integer idFoto, @RequestBody Map<String, Integer> body) {
-        Integer idUsuario = body.get("idUsuario");
+    public ResponseEntity<?> quitarLike(
+            @PathVariable Integer idFoto,
+            @RequestParam Integer idUsuario // <-- así, no en el body
+    ) {
         boolean unliked = fotografiaService.unlikePhoto(idFoto, idUsuario);
         int likesCount = fotografiaService.likesCount(idFoto);
         return ResponseEntity.ok(Map.of("success", true, "unliked", unliked, "likesCount", likesCount));

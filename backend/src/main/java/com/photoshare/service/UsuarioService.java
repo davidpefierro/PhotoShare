@@ -52,8 +52,8 @@ public class UsuarioService {
 
   // usuarioRepository.save(usuario);
   // }
-  public void actualizarUsuario(Long id, UsuarioDTO dto) {
-    Usuario usuario = usuarioRepository.findById(id)
+  public void actualizarUsuario(Integer idUsuario, UsuarioDTO dto) {
+    Usuario usuario = usuarioRepository.findById(idUsuario)
         .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Usuario no encontrado"));
 
     if (dto.getNombre() != null)
@@ -84,7 +84,7 @@ public class UsuarioService {
     usuarioRepository.save(usuario);
   }
 
-  public UsuarioDTO obtenerUsuarioPorId(Long id) {
+  public UsuarioDTO obtenerUsuarioPorId(Integer id) {
     Usuario usuario = usuarioRepository.findById(id)
         .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Usuario no encontrado"));
     return UsuarioDTO.fromEntity(usuario);
