@@ -60,4 +60,12 @@ public class MensajeService {
     mensaje.setEstado(Mensaje.Estado.Visto);
     mensajeRepository.save(mensaje);
   }
+
+  public void eliminarMensaje(Long idMensaje) {
+    if (!mensajeRepository.existsById(idMensaje)) {
+      throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Mensaje no encontrado");
+    }
+    mensajeRepository.deleteById(idMensaje);
+  }
+
 }
