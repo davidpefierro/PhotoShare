@@ -3,6 +3,8 @@ import Swal from "sweetalert2";
 import { useAuthStore } from '../stores/authStore';
 import Select from "react-select"; // React Select
 import '@fortawesome/fontawesome-free/css/all.min.css';
+import { useNavigate } from "react-router-dom";
+
 
 // Función auxiliar para truncar texto a 13 caracteres
 function truncarTexto(texto) {
@@ -22,6 +24,8 @@ export default function AdminUsersPage() {
 
   const usuarioActual = useAuthStore((state) => state.user);
   const idUsuarioActual = Number(usuarioActual?.idUsuario);
+  const navigate = useNavigate();
+
 
   useEffect(() => {
     if (idUsuarioActual) {
@@ -124,6 +128,15 @@ export default function AdminUsersPage() {
   return (
     <div className="min-h-screen p-6 bg-gray-100">
       <div className="max-w-4xl mx-auto bg-white rounded shadow p-6">
+        <div className="flex justify-between items-center mb-6">
+          <h1 className="text-2xl font-bold">Administrar usuarios</h1>
+          <button
+            onClick={() => navigate("/admin/reportes")}
+            className="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600 shadow"
+          >
+            Ir a reportes
+          </button>
+        </div>
         <h1 className="text-2xl font-bold mb-6">Administrar usuarios</h1>
         <div className="flex gap-4 mb-4 items-center">
           <input

@@ -32,7 +32,8 @@ public class ReporteController {
             String tipoContenido = (String) body.get("tipoContenido");
 
             if (idReportador == null || idDenunciado == null || motivo == null || tipoContenido == null) {
-                return ResponseEntity.badRequest().body(Map.of("success", false, "message", "Faltan datos obligatorios"));
+                return ResponseEntity.badRequest()
+                        .body(Map.of("success", false, "message", "Faltan datos obligatorios"));
             }
 
             if (!usuarioRepository.existsById(idReportador) || !usuarioRepository.existsById(idDenunciado)) {
@@ -55,4 +56,16 @@ public class ReporteController {
             return ResponseEntity.internalServerError().body(Map.of("success", false, "message", "Error al reportar"));
         }
     }
+
+    @GetMapping("")
+    public ResponseEntity<?> obtenerTodosLosReportes() {
+        return ResponseEntity.ok(reporteService.obtenerTodos());
+    }
+
+    @PutMapping("/{id}/resolver")
+    public ResponseEntity<?> resolverReporte(@PathVariable Integer id) {
+        reporteService.marcarComoResuelto(id);
+        return ResponseEntity.ok().build();
+    }
+
 }
