@@ -8,7 +8,7 @@ import lombok.*;
 @NoArgsConstructor
 @AllArgsConstructor
 public class UsuarioDTO {
-  private Long idUsuario;
+  private Integer idUsuario;
   private String nombre;
   private String apellidos;
   private String nombreUsuario;
@@ -18,7 +18,7 @@ public class UsuarioDTO {
 
   public static UsuarioDTO fromEntity(Usuario usuario) {
     return UsuarioDTO.builder()
-        .idUsuario(usuario.getIdUsuario() != null ? usuario.getIdUsuario().longValue() : null)
+        .idUsuario(usuario.getIdUsuario() != null ? usuario.getIdUsuario() : null)
         .nombre(usuario.getNombre())
         .apellidos(usuario.getApellidos())
         .nombreUsuario(usuario.getNombreUsuario())

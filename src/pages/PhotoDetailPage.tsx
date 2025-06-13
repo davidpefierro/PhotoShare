@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import { formatDistanceToNow } from "date-fns";
 import { es } from "date-fns/locale";
 import { Heart } from "lucide-react";
@@ -8,6 +8,7 @@ import { useAuthStore } from "../stores/authStore";
 
 const PhotoDetailPage = () => {
   const { id } = useParams();
+  const navigate = useNavigate();
   const { user, isAuthenticated } = useAuthStore();
   const [photo, setPhoto] = useState(null);
   const [comments, setComments] = useState([]);
@@ -15,13 +16,10 @@ const PhotoDetailPage = () => {
   const [loading, setLoading] = useState(true);
   const [commentLoading, setCommentLoading] = useState(false);
   const [isLiking, setIsLiking] = useState(false);
-  // Estados locales para MG en detalle
   const [userLiked, setUserLiked] = useState(false);
   const [likesCount, setLikesCount] = useState(0);
 
-  // Carga la foto y los comentarios
   useEffect(() => {
-    // Si usas protección por login, espera a que user esté disponible (null o un objeto, nunca undefined)
     if (user === undefined) return;
     const fetchPhoto = async () => {
       setLoading(true);
@@ -41,7 +39,7 @@ const PhotoDetailPage = () => {
     };
     fetchPhoto();
   }, [id, user]);
-  
+
   const handleLike = async () => {
     if (!isAuthenticated) return;
     setIsLiking(true);
@@ -64,29 +62,37 @@ const PhotoDetailPage = () => {
     }
   };
 
-const handleCommentSubmit = async (e) => {
-  e.preventDefault();
-  if (!commentText.trim() || !isAuthenticated) return;
-  setCommentLoading(true);
-  if (photoService.subirComentario) {
-    const res = await photoService.subirComentario(
-      Number(id),
-      commentText,
-      user.idUsuario ?? user.id
-    );
-    if (res.success) {
-      setComments((prev) => [...prev, res.data]);
-      setCommentText("");
+  const handleCommentSubmit = async (e) => {
+    e.preventDefault();
+    if (!commentText.trim() || !isAuthenticated) return;
+    setCommentLoading(true);
+    if (photoService.subirComentario) {
+      const res = await photoService.subirComentario(
+        Number(id),
+        commentText,
+        user.idUsuario ?? user.id
+      );
+      if (res.success) {
+        setComments((prev) => [...prev, res.data]);
+        setCommentText("");
+      }
     }
-  }
-  setCommentLoading(false);
-};
+    setCommentLoading(false);
+  };
 
   if (loading) return <div className="p-8">Cargando...</div>;
   if (!photo) return <div className="p-8">Foto no encontrada.</div>;
 
   return (
-    <div className="flex flex-col md:flex-row min-h-screen bg-gray-100">
+    <div className="relative flex flex-col md:flex-row min-h-screen bg-gray-100">
+      {/* Botón de volver */}
+      <button
+        onClick={() => navigate("/explore")}
+        className="absolute top-6 left-6 z-10 bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 shadow"
+      >
+        ← Atrás
+      </button>
+
       {/* Foto */}
       <div className="w-full md:flex-1 flex justify-center items-center bg-black">
         <div className="bg-white rounded-lg shadow-lg p-6 m-4 border border-gray-300 flex justify-center items-center w-full md:w-auto">
@@ -97,6 +103,7 @@ const handleCommentSubmit = async (e) => {
           />
         </div>
       </div>
+
       {/* Comentarios y detalles */}
       <div className="w-full md:max-w-md bg-white border-t md:border-t-0 md:border-l border-gray-200 flex flex-col">
         {/* Header */}
@@ -113,6 +120,7 @@ const handleCommentSubmit = async (e) => {
             </p>
           </div>
         </div>
+
         {/* Comentarios */}
         <div className="flex-1 overflow-y-auto px-4 py-3 space-y-4">
           <p className="text-gray-700 font-medium">{photo.descripcion}</p>
@@ -136,6 +144,7 @@ const handleCommentSubmit = async (e) => {
             </div>
           ))}
         </div>
+
         {/* Likes y comentar */}
         <div className="border-t p-4">
           <div className="flex items-center mb-4">

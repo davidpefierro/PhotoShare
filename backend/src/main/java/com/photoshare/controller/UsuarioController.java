@@ -18,7 +18,7 @@ public class UsuarioController {
 
   // @GetMapping
   // public ResponseEntity<List<UsuarioDTO>> obtenerTodos() {
-  //   return ResponseEntity.ok(usuarioService.obtenerTodos());
+  // return ResponseEntity.ok(usuarioService.obtenerTodos());
   // }
 
   @GetMapping
@@ -39,7 +39,7 @@ public class UsuarioController {
   }
 
   @GetMapping("/{idUsuario}")
-  public ResponseEntity<UsuarioDTO> obtenerUsuarioPorId(@PathVariable Long idUsuario) {
+  public ResponseEntity<UsuarioDTO> obtenerUsuarioPorId(@PathVariable Integer idUsuario) {
     return ResponseEntity.ok(usuarioService.obtenerUsuarioPorId(idUsuario));
   }
 }
