@@ -5,7 +5,7 @@ WORKDIR /app
 COPY package*.json ./
 RUN npm install
 RUN npm install sweetalert2
-RUN npm install --save @fortawesome/react-fontawesome @fortawesome/free-solid-svg-icons
+RUN npm install --save @fortawesome/react-fontawesome @fortawesome/free-solid-svg-icons react-select
 
 
 COPY . .
