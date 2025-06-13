@@ -1,8 +1,9 @@
 import { useState, useEffect } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuthStore } from '../../stores/authStore';
-import { Camera, Heart, MessageCircle, User, LogOut, Settings, Bell, Menu, X } from 'lucide-react';
+import { Camera, Heart, MessageCircle, User, LogOut, Settings, Menu, X } from 'lucide-react';
 import Button from '../ui/Button';
+import '@fortawesome/fontawesome-free/css/all.min.css';
 
 // Función utilitaria para proteger el acceso a charAt
 function getFirstLetter(str) {
@@ -104,18 +105,13 @@ const Navbar = () => {
                       Admin
                     </Link>
                   )}
-                  <Link
-                    to="/notifications"
-                    className="text-gray-700 hover:text-primary-600"
-                  >
-                    <Bell className="h-5 w-5" />
-                  </Link>
+
                   <Link
                     to={`/profile/${user?.idUsuario}`}
                     className="flex items-center text-sm font-medium text-gray-700 hover:text-primary-600"
                   >
                     <div className="h-8 w-8 rounded-full bg-primary-200 flex items-center justify-center text-primary-700">
-                      {getFirstLetter(user?.username)}
+                      <i className="fa-solid fa-user text-lg"></i>
                     </div>
                   </Link>
                   <button
@@ -195,13 +191,7 @@ const Navbar = () => {
                     Admin
                   </Link>
                 )}
-                <Link
-                  to="/notifications"
-                  className="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-primary-600 hover:bg-gray-50"
-                  onClick={closeMobileMenu}
-                >
-                  Notificaciones
-                </Link>
+
                 <Link
                   to={`/profile/${user?.idUsuario}`}
                   className="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-primary-600 hover:bg-gray-50"

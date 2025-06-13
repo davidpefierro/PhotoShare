@@ -2,6 +2,13 @@ import React, { useEffect, useState } from "react";
 import Swal from "sweetalert2";
 import { useAuthStore } from '../stores/authStore';
 import Select from "react-select"; // React Select
+import '@fortawesome/fontawesome-free/css/all.min.css';
+
+// Función auxiliar para truncar texto a 13 caracteres
+function truncarTexto(texto) {
+  if (!texto) return "";
+  return texto.length > 13 ? texto.slice(0, 13) + "..." : texto;
+}
 
 export default function AdminUsersPage() {
   const [usuarios, setUsuarios] = useState([]);
@@ -149,24 +156,38 @@ export default function AdminUsersPage() {
             {usuariosPaginados.map((u) => (
               <tr key={u.idUsuario}>
                 <td className="border-t px-4 py-2">{u.idUsuario}</td>
-                <td className="border-t px-4 py-2">{u.nombre}</td>
-                <td className="border-t px-4 py-2">{u.apellidos || ""}</td>
-                <td className="border-t px-4 py-2">{u.nombreUsuario}</td>
-                <td className="border-t px-4 py-2">{u.correo}</td>
-                <td className="border-t px-4 py-2">{u.rol}</td>
+                <td className="border-t px-4 py-2 max-w-[130px] min-w-[70px] overflow-hidden whitespace-nowrap text-ellipsis" title={u.nombre}>
+                  {truncarTexto(u.nombre)}
+                </td>
+                <td className="border-t px-4 py-2 max-w-[130px] min-w-[70px] overflow-hidden whitespace-nowrap text-ellipsis" title={u.apellidos || ""}>
+                  {truncarTexto(u.apellidos || "")}
+                </td>
+                <td className="border-t px-4 py-2 max-w-[130px] min-w-[70px] overflow-hidden whitespace-nowrap text-ellipsis" title={u.nombreUsuario}>
+                  {truncarTexto(u.nombreUsuario)}
+                </td>
+                <td className="border-t px-4 py-2 max-w-[130px] min-w-[70px] overflow-hidden whitespace-nowrap text-ellipsis" title={u.correo}>
+                  {truncarTexto(u.correo)}
+                </td>
+                <td className="border-t px-4 py-2 max-w-[130px] min-w-[70px] overflow-hidden whitespace-nowrap text-ellipsis" title={u.rol}>
+                  {truncarTexto(u.rol)}
+                </td>
                 <td className="border-t px-4 py-2">
-                  <button
-                    className="bg-yellow-500 text-white px-2 py-1 mr-2 rounded hover:bg-yellow-600"
-                    onClick={() => setUsuarioEditar(u)}
-                  >
-                    Editar
-                  </button>
-                  <button
-                    className="bg-red-600 text-white px-2 py-1 rounded hover:bg-red-700"
-                    onClick={() => eliminarUsuario(u.idUsuario)}
-                  >
-                    Eliminar
-                  </button>
+                  <div className="flex items-center gap-2">
+                    <button
+                      title="Editar"
+                      className="text-yellow-500 hover:text-yellow-700 text-xl focus:outline-none"
+                      onClick={() => setUsuarioEditar(u)}
+                    >
+                      <i className="fa-solid fa-pen-to-square"></i>
+                    </button>
+                    <button
+                      title="Eliminar"
+                      className="text-red-600 hover:text-red-800 text-xl focus:outline-none"
+                      onClick={() => eliminarUsuario(u.idUsuario)}
+                    >
+                      <i className="fa-solid fa-trash"></i>
+                    </button>
+                  </div>
                 </td>
               </tr>
             ))}
@@ -198,33 +219,63 @@ export default function AdminUsersPage() {
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
           <div className="bg-white p-6 rounded shadow max-w-md w-full">
             <h2 className="text-xl font-bold mb-4">Editar usuario</h2>
-            {/* Campos como antes... */}
-            {/* ... */}
             <div className="mb-4">
-              <label className="block mb-1">Rol:</label>
-              <Select
-                value={{ label: usuarioEditar.rol, value: usuarioEditar.rol }}
-                onChange={(selected) =>
-                  setUsuarioEditar({ ...usuarioEditar, rol: selected.value })
-                }
-                options={[
-                  { label: "Usuario", value: "Usuario" },
-                  { label: "Administrador", value: "Administrador" },
-                ]}
+              <label className="block mb-1">Nombre:</label>
+              <input
+                type="text"
+                value={usuarioEditar.nombre}
+                onChange={(e) => setUsuarioEditar({ ...usuarioEditar, nombre: e.target.value })}
+                className="border px-3 py-2 w-full rounded"
               />
             </div>
             <div className="mb-4">
-              <label className="block mb-1">Estado:</label>
-              <Select
-                value={{ label: usuarioEditar.estado || "Activo", value: usuarioEditar.estado || "Activo" }}
-                onChange={(selected) =>
-                  setUsuarioEditar({ ...usuarioEditar, estado: selected.value })
-                }
-                options={[
-                  { label: "Activo", value: "Activo" },
-                  { label: "Bloqueado", value: "Bloqueado" },
-                ]}
+              <label className="block mb-1">Apellidos:</label>
+              <input
+                type="text"
+                value={usuarioEditar.apellidos || ""}
+                onChange={(e) => setUsuarioEditar({ ...usuarioEditar, apellidos: e.target.value })}
+                className="border px-3 py-2 w-full rounded"
               />
+            </div>
+            <div className="mb-4">
+              <label className="block mb-1">Nombre de usuario:</label>
+              <input
+                type="text"
+                value={usuarioEditar.nombreUsuario}
+                onChange={(e) => setUsuarioEditar({ ...usuarioEditar, nombreUsuario: e.target.value })}
+                className="border px-3 py-2 w-full rounded"
+              />
+            </div>
+            <div className="mb-4">
+              <label className="block mb-1">Correo:</label>
+              <input
+                type="email"
+                value={usuarioEditar.correo}
+                onChange={(e) => setUsuarioEditar({ ...usuarioEditar, correo: e.target.value })}
+                className="border px-3 py-2 w-full rounded"
+              />
+            </div>
+            <div className="mb-4">
+              <label className="block mb-1">Rol:</label>
+              <select
+                value={usuarioEditar.rol}
+                onChange={(e) => setUsuarioEditar({ ...usuarioEditar, rol: e.target.value })}
+                className="border px-3 py-2 w-full rounded"
+              >
+                <option value="Usuario">Usuario</option>
+                <option value="Administrador">Administrador</option>
+              </select>
+            </div>
+            <div className="mb-4">
+              <label className="block mb-1">Estado:</label>
+              <select
+                value={usuarioEditar.estado || "Activo"}
+                onChange={(e) => setUsuarioEditar({ ...usuarioEditar, estado: e.target.value })}
+                className="border px-3 py-2 w-full rounded"
+              >
+                <option value="Activo">Activo</option>
+                <option value="Bloqueado">Bloqueado</option>
+              </select>
             </div>
             <div className="flex justify-end gap-2">
               <button
@@ -243,6 +294,7 @@ export default function AdminUsersPage() {
           </div>
         </div>
       )}
+
     </div>
   );
 }

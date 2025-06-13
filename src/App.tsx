@@ -15,6 +15,7 @@ import ProtectedAdminRoute from "./components/ProtectedAdminRoute";
 import BandejaMensajes from './pages/BandejaMensajes';
 import ChatPrivado from './pages/ChatPrivado';
 import PhotoDetailPage from './pages/PhotoDetailPage';
+import '@fortawesome/fontawesome-free/css/all.min.css';
 
 // Protected route component
 const ProtectedRoute = ({ children }) => {
