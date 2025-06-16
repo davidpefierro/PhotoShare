@@ -9,7 +9,7 @@ import com.photoshare.repository.FotografiaRepository;
 import com.photoshare.repository.MeGustaRepository;
 import com.photoshare.repository.UsuarioRepository;
 
-import jakarta.transaction.Transactional;
+import org.springframework.transaction.annotation.Transactional;
 
 import org.springframework.data.domain.PageRequest;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -165,6 +165,7 @@ public class FotografiaService {
     }
 
     // Quitar like a una foto
+    @Transactional
     public boolean unlikePhoto(Integer idFoto, Integer idUsuario) {
         if (meGustaRepository.existsByIdFotoAndIdUsuario(idFoto, idUsuario)) {
             meGustaRepository.deleteByIdFotoAndIdUsuario(idFoto, idUsuario);

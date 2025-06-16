@@ -1,8 +1,6 @@
 import api from './api';
-import axios from 'axios';
 import { Photo, PhotoCreateRequest, PageResponse, ApiResponse } from '../types';
 
-// Puedes pasar el idUsuario autenticado a los métodos para que userLiked siempre sea correcto.
 export const photoService = {
   obtenerFotos: async (
     pagina = 0,
@@ -26,7 +24,7 @@ export const photoService = {
             idFoto: foto.idFoto,
             idUsuario: foto.idUsuario,
             fechaPublicacion: foto.fechaPublicacion,
-            userLiked: foto.userLiked,
+            userLiked: foto.userLiked,     // ← este campo lo pone el backend según el usuario autenticado
             likesCount: foto.likesCount,
             commentsCount: foto.commentsCount,
           })),
@@ -78,6 +76,20 @@ export const photoService = {
     }
   },
 
+userLiked: async (idFoto: number, idUsuario: number): Promise<boolean> => {
+  try {
+    const res = await api.get(`/fotografias/${idFoto}/liked`, {
+      params: { idUsuario },
+    });
+    // Admite true, "true" o incluso { liked: true }
+    if (typeof res.data === 'boolean') return res.data;
+    if (typeof res.data === 'string') return res.data === "true";
+    if (typeof res.data === 'object' && res.data.liked !== undefined) return !!res.data.liked;
+    return false;
+  } catch (e) {
+    return false;
+  }
+},
   subirFoto: async (datosFoto: PhotoCreateRequest & { idUsuario: number }): Promise<ApiResponse<Photo>> => {
     try {
       const formData = new FormData();
@@ -113,16 +125,13 @@ export const photoService = {
 
   darLikeAFoto: async (idFoto, idUsuario) => {
     const res = await api.post(`/fotografias/${idFoto}/like`, { idUsuario });
-
     return { success: res.data.success, likesCount: res.data.likesCount };
   },
   quitarLikeAFoto: async (idFoto, idUsuario) => {
     const res = await api.delete(`/fotografias/${idFoto}/like`, { params: { idUsuario } });
-    console.log("Quitar like: idFoto=" + idFoto + ", idUsuario=" + idUsuario);
     return { success: res.data.success, likesCount: res.data.likesCount };
   },
 
-  // === COMENTARIOS ===
   obtenerComentarios: async (idFoto: number) => {
     try {
       const res = await api.get(`/comentarios/foto/${idFoto}`);

@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { formatDistanceToNow } from 'date-fns';
 import { es } from 'date-fns/locale';
@@ -12,7 +12,7 @@ const PhotoCard = ({ photo, onLikeToggle, onDelete }) => {
   const { user, isAuthenticated } = useAuthStore();
 
   // Estado local para MG y contador de likes
-  const [userLiked, setUserLiked] = useState(photo.userLiked);
+  const [userLiked, setUserLiked] = useState(photo.userLiked ?? false);
   const [likesCount, setLikesCount] = useState(photo.likesCount ?? 0);
   const [isLiking, setIsLiking] = useState(false);
   const [showActions, setShowActions] = useState(false);
@@ -23,6 +23,18 @@ const PhotoCard = ({ photo, onLikeToggle, onDelete }) => {
   const userId = photo.idUsuario;
   const photoId = photo.idFoto;
   const isOwnPhoto = user?.id === userId || user?.idUsuario === userId;
+
+  // Sync userLiked con backend si cambia el usuario autenticado o la foto
+useEffect(() => {
+  if (user?.idUsuario && photoId) {
+    photoService.userLiked(photoId, user.idUsuario).then(liked => {
+      setUserLiked(liked);
+      console.log('[PhotoCard] userLiked de', photoId, 'para usuario', user.idUsuario, ':', liked);
+    });
+  } else {
+    setUserLiked(false);
+  }
+}, [photoId, user?.idUsuario]);
 
   // Like/Unlike handler
   const handleLike = async () => {
@@ -37,10 +49,12 @@ const PhotoCard = ({ photo, onLikeToggle, onDelete }) => {
         result = await photoService.darLikeAFoto(photoId, user.idUsuario ?? user.id);
       }
       if (result.success) {
-        setUserLiked(!userLiked);
+        // Vuelve a consultar el estado real desde la base tras el cambio
+        const liked = await photoService.userLiked(photoId, user.idUsuario ?? user.id);
+        setUserLiked(liked);
         setLikesCount(result.likesCount);
         if (onLikeToggle) {
-          onLikeToggle(photoId, !userLiked, result.likesCount);
+          onLikeToggle(photoId, liked, result.likesCount);
         }
       }
     } catch (e) {
@@ -49,6 +63,7 @@ const PhotoCard = ({ photo, onLikeToggle, onDelete }) => {
       setIsLiking(false);
     }
   };
+
   // Handle reportar
   const handleReport = async () => {
     if (!isAuthenticated) return;
@@ -111,6 +126,7 @@ const PhotoCard = ({ photo, onLikeToggle, onDelete }) => {
       }
     }
   };
+
   return (
     <div className="bg-white rounded-lg shadow-md overflow-hidden animate-fade-in">
       <div className="p-4 flex items-center">

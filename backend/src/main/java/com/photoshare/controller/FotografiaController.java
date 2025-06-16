@@ -161,4 +161,11 @@ public class FotografiaController {
         int likesCount = fotografiaService.likesCount(idFoto);
         return ResponseEntity.ok(Map.of("success", true, "unliked", unliked, "likesCount", likesCount));
     }
+@GetMapping("/{idFoto}/liked")
+public boolean userLiked(
+    @PathVariable Integer idFoto,
+    @RequestParam Integer idUsuario
+) {
+    return fotografiaService.userLiked(idFoto, idUsuario);
+}
 }
