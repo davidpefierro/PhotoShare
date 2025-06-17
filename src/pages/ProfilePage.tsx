@@ -3,7 +3,8 @@ import { useParams } from "react-router-dom";
 import PhotoCard from "../components/photo/PhotoCard";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faPen } from '@fortawesome/free-solid-svg-icons';
-import Swal from 'sweetalert2'
+import Swal from 'sweetalert2';
+import { useAuthStore } from "../stores/authStore";
 
 type UsuarioDTO = {
   idUsuario: number;
@@ -37,10 +38,13 @@ const ProfilePage: React.FC = () => {
   const [isEditOpen, setIsEditOpen] = useState(false);
   const [editData, setEditData] = useState<UsuarioDTO | null>(null);
 
+  // Acceso al usuario autenticado
+  const authUser = useAuthStore((state) => state.user);
+
   useEffect(() => {
     if (!id) return;
     setLoading(true);
-    fetch(`${process.env.REACT_APP_API_URL || ""}/api/usuarios/${id}`)
+    fetch(`${import.meta.env.VITE_BACKEND_URL || ""}/api/usuarios/${id}`)
       .then((res) => {
         if (!res.ok) throw new Error("No se pudo cargar el usuario");
         return res.json();
@@ -58,7 +62,7 @@ const ProfilePage: React.FC = () => {
   useEffect(() => {
     if (!id) return;
     setPhotosLoading(true);
-    fetch(`${process.env.REACT_APP_API_URL || ""}/api/fotografias/user/${id}`)
+    fetch(`${import.meta.env.VITE_BACKEND_URL || ""}/api/fotografias/user/${id}`)
       .then((res) => {
         if (!res.ok) throw new Error("No se pudieron cargar las fotos");
         return res.json();
@@ -98,7 +102,7 @@ const ProfilePage: React.FC = () => {
     try {
       // Solo mandamos los campos editables
       const { nombre, apellidos, nombreUsuario, correo } = editData;
-      const res = await fetch(`${process.env.REACT_APP_API_URL || ""}/api/usuarios/${user?.idUsuario}`, {
+      const res = await fetch(`${import.meta.env.VITE_BACKEND_URL || ""}/api/usuarios/${user?.idUsuario}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ nombre, apellidos, nombreUsuario, correo }),
@@ -125,17 +129,21 @@ const ProfilePage: React.FC = () => {
   if (error) return <div>Error: {error}</div>;
   if (!user) return <div>No se encontró el usuario.</div>;
 
+  const canEditProfile = authUser && user && authUser.idUsuario === user.idUsuario;
+
   return (
     <div className="w-full md:w-1/2 max-w-3xl mx-auto mt-8 p-6 bg-white rounded shadow relative">
-      {/* Botón editar perfil arriba a la derecha */}
-      <button
-        className="absolute top-0 right-0 mt-4 mr-4 bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 flex items-center justify-center text-base z-10"
-        aria-label="Editar perfil"
-        onClick={openEditModal}
-      >
-        <FontAwesomeIcon icon={faPen} className="w-5 h-5 mr-2" />
-        Editar perfil
-      </button>
+      {/* Botón editar perfil arriba a la derecha solo si es el usuario autenticado */}
+      {canEditProfile && (
+        <button
+          className="absolute top-0 right-0 mt-4 mr-4 bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 flex items-center justify-center text-base z-10"
+          aria-label="Editar perfil"
+          onClick={openEditModal}
+        >
+          <FontAwesomeIcon icon={faPen} className="w-5 h-5 mr-2" />
+          Editar perfil
+        </button>
+      )}
       <div className="flex flex-col items-center">
         <div className="h-20 w-20 rounded-full bg-primary-200 flex items-center justify-center text-4xl text-primary-700 mb-4">
           {user.nombreUsuario.charAt(0).toUpperCase()}
