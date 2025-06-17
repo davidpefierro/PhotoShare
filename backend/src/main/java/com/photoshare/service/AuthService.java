@@ -53,16 +53,25 @@ public class AuthService {
 
     public AuthResponse login(LoginRequest request) {
         Usuario usuario = usuarioRepository.findByNombreUsuario(request.getNombreUsuario())
-                .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
-        if (!passwordEncoder.matches(request.getContrasena(), usuario.getContrasena()))
+                .orElse(null);
+
+        // Si no existe el usuario o la contraseña no coincide, devolver el mismo
+        // mensaje
+        if (usuario == null || !passwordEncoder.matches(request.getContrasena(), usuario.getContrasena())) {
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Credenciales inválidas");
-        if (usuario.getEstado() == Usuario.Estado.Bloqueado)
+        }
+
+        if (usuario.getEstado() == Usuario.Estado.Bloqueado) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Usuario bloqueado");
+        }
+
         String token = jwtService.generarToken(usuario.getNombreUsuario(), usuario.getRol().name());
+
         return new AuthResponse(
                 token,
                 usuario.getNombreUsuario(),
                 usuario.getRol().name(),
                 usuario.getIdUsuario() != null ? usuario.getIdUsuario().longValue() : null);
     }
+
 }

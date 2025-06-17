@@ -7,33 +7,42 @@ import { LoginRequest } from '../types';
 import { Camera, Lock, User, Eye, EyeOff } from 'lucide-react';
 import Button from '../components/ui/Button';
 import Input from '../components/ui/Input';
+import Swal from 'sweetalert2';
 
 const Login = () => {
   const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
   const [showPassword, setShowPassword] = useState(false);
   const navigate = useNavigate();
   const { login } = useAuthStore();
 
-  const { register, handleSubmit, formState: { errors } } = useForm<LoginRequest>();
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+  } = useForm<LoginRequest>();
 
   const onSubmit = async (data: LoginRequest) => {
     setIsLoading(true);
-    setError(null);
+
     try {
       const response = await authService.login(data);
       if (response.success && response.data) {
         login(response.data);
         navigate('/');
       } else {
-        setError(response.message || 'Error al iniciar sesión. Por favor, verifica tus credenciales.');
+        Swal.fire('Error', response.message || 'Credenciales inválidas', 'error');
       }
-    } catch (err) {
-      setError('Ha ocurrido un error inesperado. Por favor, inténtalo más tarde.');
-    } finally {
+    } catch (err: any) {
+      const errorMessage =
+        err.response?.data?.message ||
+        'Ha ocurrido un error inesperado. Por favor, inténtalo más tarde.';
+      Swal.fire('Error', errorMessage, 'error');
+    }
+    finally {
       setIsLoading(false);
     }
   };
+
 
   const togglePasswordVisibility = () => setShowPassword(!showPassword);
 
@@ -56,16 +65,6 @@ const Login = () => {
 
       <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
         <div className="bg-white py-8 px-4 shadow sm:rounded-lg sm:px-10">
-          {error && (
-            <div className="mb-4 rounded-md bg-red-50 p-4">
-              <div className="flex">
-                <div className="ml-3">
-                  <h3 className="text-sm font-medium text-red-800">{error}</h3>
-                </div>
-              </div>
-            </div>
-          )}
-
           <form className="space-y-6" onSubmit={handleSubmit(onSubmit)}>
             <div>
               <Input
@@ -104,11 +103,7 @@ const Login = () => {
                 onClick={togglePasswordVisibility}
                 className="absolute right-3 top-9 text-gray-500 hover:text-gray-700 focus:outline-none"
               >
-                {showPassword ? (
-                  <EyeOff className="h-5 w-5" />
-                ) : (
-                  <Eye className="h-5 w-5" />
-                )}
+                {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
               </button>
             </div>
 
@@ -124,36 +119,21 @@ const Login = () => {
                   Recordarme
                 </label>
               </div>
-              <div className="text-sm">
-                <Link to="/forgot-password" className="font-medium text-primary-600 hover:text-primary-500">
-                  ¿Olvidaste tu contraseña?
-                </Link>
-              </div>
+
             </div>
 
             <div>
-              <Button
-                type="submit"
-                variant="primary"
-                isLoading={isLoading}
-                fullWidth
-              >
+              <Button type="submit" variant="primary" isLoading={isLoading} fullWidth>
                 Iniciar sesión
               </Button>
             </div>
           </form>
 
-          <div className="mt-6">
-            <p className="text-center text-sm text-gray-600">
-              ¿Problemas para iniciar sesión?{' '}
-              <Link to="/contact" className="font-medium text-primary-600 hover:text-primary-500">
-                Contacta con soporte
-              </Link>
-            </p>
-          </div>
+
         </div>
       </div>
     </div>
   );
 };
+
 export default Login;

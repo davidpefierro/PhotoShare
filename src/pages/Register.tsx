@@ -7,10 +7,10 @@ import { RegisterRequest } from '../types';
 import { Camera, User, Mail, Lock } from 'lucide-react';
 import Button from '../components/ui/Button';
 import Input from '../components/ui/Input';
+import Swal from 'sweetalert2';
 
 const Register = () => {
   const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
   const navigate = useNavigate();
   const { login } = useAuthStore();
 
@@ -24,8 +24,21 @@ const Register = () => {
   const contrasena = watch('contrasena', '');
 
   const onSubmit = async (data: RegisterRequest & { confirmPassword: string }) => {
+    // Si hay errores de validación, mostrar con SweetAlert
+    if (Object.keys(errors).length > 0) {
+      const firstErrorKey = Object.keys(errors)[0];
+      const firstErrorMessage = errors[firstErrorKey as keyof typeof errors]?.message;
+      if (firstErrorMessage) {
+        Swal.fire({
+          icon: 'error',
+          title: 'Error de validación',
+          text: firstErrorMessage,
+        });
+        return;
+      }
+    }
+
     setIsLoading(true);
-    setError(null);
 
     const { confirmPassword, ...registerData } = data;
 
@@ -36,10 +49,18 @@ const Register = () => {
         login(response.data);
         navigate('/');
       } else {
-        setError(response.message || 'Error al registrarse. Por favor, inténtalo de nuevo.');
+        Swal.fire({
+          icon: 'error',
+          title: 'Error al registrarse',
+          text: response.message || 'Por favor, inténtalo de nuevo.',
+        });
       }
     } catch (err) {
-      setError('Ha ocurrido un error inesperado. Por favor, inténtalo más tarde.');
+      Swal.fire({
+        icon: 'error',
+        title: 'Error inesperado',
+        text: 'Ha ocurrido un error. Por favor, inténtalo más tarde.',
+      });
     } finally {
       setIsLoading(false);
     }
@@ -64,16 +85,6 @@ const Register = () => {
 
       <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
         <div className="bg-white py-8 px-4 shadow sm:rounded-lg sm:px-10">
-          {error && (
-            <div className="mb-4 rounded-md bg-red-50 p-4">
-              <div className="flex">
-                <div className="ml-3">
-                  <h3 className="text-sm font-medium text-red-800">{error}</h3>
-                </div>
-              </div>
-            </div>
-          )}
-
           <form className="space-y-6" onSubmit={handleSubmit(onSubmit)}>
             <div className="grid grid-cols-2 gap-3">
               <div>
@@ -118,11 +129,12 @@ const Register = () => {
                   required: 'El nombre de usuario es obligatorio',
                   minLength: {
                     value: 3,
-                    message: 'El nombre de usuario debe tener al menos 3 caracteres',
+                    message: 'Debe tener al menos 3 caracteres',
                   },
                   pattern: {
                     value: /^[a-zA-Z0-9._-]+$/,
-                    message: 'El nombre de usuario solo puede contener letras, números, puntos, guiones bajos y guiones',
+                    message:
+                      'Solo se permiten letras, números, puntos, guiones y guiones bajos',
                   },
                 })}
               />
@@ -158,9 +170,10 @@ const Register = () => {
                 fullWidth
                 {...register('contrasena', {
                   required: 'La contraseña es obligatoria',
-                  minLength: {
-                    value: 6,
-                    message: 'La contraseña debe tener al menos 6 caracteres',
+                  pattern: {
+                    value: /^(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z0-9]).{6,}$/,
+                    message:
+                      'Debe tener al menos 6 caracteres, una mayúscula, un número y un símbolo',
                   },
                 })}
               />
