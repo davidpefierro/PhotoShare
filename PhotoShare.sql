@@ -78,8 +78,10 @@ CREATE TABLE reporte (
     motivo TEXT NOT NULL,
     fecha_reporte DATETIME NOT NULL,
     estado ENUM('Pendiente', 'Resuelto') NOT NULL,
+    id_foto INT NULL,
     FOREIGN KEY (id_reportador) REFERENCES usuario(id_usuario),
-    FOREIGN KEY (id_denunciado) REFERENCES usuario(id_usuario)
+    FOREIGN KEY (id_denunciado) REFERENCES usuario(id_usuario),
+    FOREIGN KEY (id_foto) REFERENCES fotografia(id_foto)
 );
 
 -- Tabla Notificaciones

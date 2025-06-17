@@ -31,17 +31,18 @@ public class Reporte {
     @Column(name = "estado", nullable = false)
     private EstadoReporte estado;
 
-    // Getters y setters...
+    @Column(name = "id_foto", nullable = false)
+    private Integer idFoto;
 
     public enum TipoContenido {
-        Foto, Comentario, Mensaje
+        Foto
     }
 
     public enum EstadoReporte {
         Pendiente, Resuelto
     }
 
-    // ... getters y setters ...
+    // Getters y setters
     public Integer getIdReporte() { return idReporte; }
     public void setIdReporte(Integer idReporte) { this.idReporte = idReporte; }
 
@@ -62,4 +63,7 @@ public class Reporte {
 
     public EstadoReporte getEstado() { return estado; }
     public void setEstado(EstadoReporte estado) { this.estado = estado; }
+
+    public Integer getIdFoto() { return idFoto; }
+    public void setIdFoto(Integer idFoto) { this.idFoto = idFoto; }
 }

@@ -5,6 +5,7 @@ import com.photoshare.model.Reporte.EstadoReporte;
 import com.photoshare.repository.ReporteRepository;
 
 import java.util.List;
+import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -31,5 +32,8 @@ public class ReporteService {
         reporte.setEstado(Reporte.EstadoReporte.Resuelto); // Enum con valor 'Resuelto'
         reporteRepository.save(reporte);
     }
+    public Optional<Reporte> findById(Integer id) {
+    return reporteRepository.findById(id);
+}
 
 }

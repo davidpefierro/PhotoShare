@@ -167,17 +167,18 @@ eliminarComentario: async (idComentario: number, nombreUsuario: string) => {
       return { success: false };
     }
   },
-  reportarFoto: async ({ idReportador, idDenunciado, motivo }) => {
-    try {
-      const res = await api.post('/reportes', {
-        idReportador,
-        idDenunciado,
-        motivo,
-        tipoContenido: 'Foto'
-      });
-      return res.data;
-    } catch (e) {
-      return { success: false, message: e?.response?.data?.message || 'Error desconocido' };
-    }
-  },
+reportarFoto: async ({ idReportador, idDenunciado, motivo, idFoto }) => {
+  try {
+    const res = await api.post('/reportes', {
+      idReportador,
+      idDenunciado,
+      motivo,
+      tipoContenido: 'Foto',
+      idFoto,
+    });
+    return res.data;
+  } catch (e) {
+    return { success: false, message: e?.response?.data?.message || 'Error desconocido' };
+  }
+},
 };

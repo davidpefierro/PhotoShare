@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import Swal from "sweetalert2";
 
 export default function AdminReportesPage() {
@@ -39,7 +39,8 @@ export default function AdminReportesPage() {
         }
       })
       .catch(err => console.error("Error al cargar reportes:", err));
-  }, []); // Nota: Si quieres que cargue usuarios nuevos al cambiar reportes, pon [reportes] en vez de []
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const resolverReporte = (idReporte) => {
     Swal.fire({
@@ -119,12 +120,17 @@ export default function AdminReportesPage() {
                 <td className="px-4 py-2 space-x-2">
                   {reporte.estado === "Pendiente" && (
                     <>
-                      <button
-                        onClick={() => navigate(`/foto/${reporte.idDenunciado}`)}
-                        className="bg-gray-300 hover:bg-gray-400 text-sm px-2 py-1 rounded"
-                      >
-                        Ir a imagen
-                      </button>
+                      {/* Ajusta aquí: Link a la foto usando el idFoto */}
+                      {reporte.idFoto ? (
+                        <Link
+                          to={`/fotografias/${reporte.idFoto}`}
+                          className="bg-gray-300 hover:bg-gray-400 text-sm px-2 py-1 rounded inline-block text-center"
+                        >
+                          Ir a imagen
+                        </Link>
+                      ) : (
+                        <span className="text-gray-400 italic">Sin foto</span>
+                      )}
                       <button
                         onClick={() => resolverReporte(reporte.idReporte)}
                         className="bg-green-500 hover:bg-green-600 text-white text-sm px-2 py-1 rounded"

@@ -65,34 +65,34 @@ useEffect(() => {
   };
 
   // Handle reportar
-  const handleReport = async () => {
-    if (!isAuthenticated) return;
-    const { value: motivo } = await Swal.fire({
-      title: 'Reportar foto',
-      input: 'textarea',
-      inputLabel: 'Motivo del reporte',
-      inputPlaceholder: 'Describe por qué reportas esta foto...',
-      inputAttributes: { 'aria-label': 'Motivo del reporte' },
-      showCancelButton: true,
-      confirmButtonText: 'Enviar reporte',
-      cancelButtonText: 'Cancelar',
-      inputValidator: value => !value && 'Por favor, escribe un motivo'
+const handleReport = async () => {
+  if (!isAuthenticated) return;
+  const { value: motivo } = await Swal.fire({
+    title: 'Reportar foto',
+    input: 'textarea',
+    inputLabel: 'Motivo del reporte',
+    inputPlaceholder: 'Describe por qué reportas esta foto...',
+    inputAttributes: { 'aria-label': 'Motivo del reporte' },
+    showCancelButton: true,
+    confirmButtonText: 'Enviar reporte',
+    cancelButtonText: 'Cancelar',
+    inputValidator: value => !value && 'Por favor, escribe un motivo'
+  });
+
+  if (motivo) {
+    const response = await photoService.reportarFoto({
+      idReportador: user.idUsuario ?? user.id,
+      idDenunciado: userId,
+      motivo,
+      idFoto: photo.idFoto
     });
-
-    if (motivo) {
-      const response = await photoService.reportarFoto({
-        idReportador: user.idUsuario ?? user.id,
-        idDenunciado: userId,
-        motivo
-      });
-      if (response.success) {
-        await Swal.fire('¡Reporte enviado!', 'Gracias por ayudarnos a mantener la comunidad segura.', 'success');
-      } else {
-        await Swal.fire('Error', response.message || 'No se pudo enviar el reporte.', 'error');
-      }
+    if (response.success) {
+      await Swal.fire('¡Reporte enviado!', 'Gracias por ayudarnos a mantener la comunidad segura.', 'success');
+    } else {
+      await Swal.fire('Error', response.message || 'No se pudo enviar el reporte.', 'error');
     }
-  };
-
+  }
+};
   // Delete handler con SweetAlert2
   const handleDelete = async () => {
     if (!isAuthenticated || !isOwnPhoto) return;
