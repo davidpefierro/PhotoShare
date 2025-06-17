@@ -15,6 +15,11 @@ import ProtectedAdminRoute from "./components/ProtectedAdminRoute";
 import BandejaMensajes from './pages/BandejaMensajes';
 import ChatPrivado from './pages/ChatPrivado';
 import PhotoDetailPage from './pages/PhotoDetailPage';
+import AdminReportesPage from './pages/AdminReportesPage'; // Ajusta la ruta si es distinta
+
+import '@fortawesome/fontawesome-free/css/all.min.css';
+
+
 
 // Protected route component
 const ProtectedRoute = ({ children }) => {
@@ -47,6 +52,15 @@ function App() {
                 </ProtectedAdminRoute>
               }
             />
+            <Route
+              path="/admin/reportes"
+              element={
+                <ProtectedAdminRoute>
+                  <AdminReportesPage />
+                </ProtectedAdminRoute>
+              }
+            />
+
             {/* Public routes */}
             <Route path="/" element={<Home />} />
             <Route path="/login" element={<Login />} />

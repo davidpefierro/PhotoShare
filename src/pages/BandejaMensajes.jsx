@@ -1,13 +1,14 @@
 import React, { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuthStore } from "../stores/authStore";
+import Select from "react-select"; // <---- NUEVO
 
 export default function BandejaMensajes() {
   const usuarioActual = useAuthStore((state) => state.user);
   const [conversaciones, setConversaciones] = useState([]);
   const [usuarios, setUsuarios] = useState({});
   const [usuariosDisponibles, setUsuariosDisponibles] = useState([]);
-  const [destinoSeleccionado, setDestinoSeleccionado] = useState("");
+  const [destinoSeleccionado, setDestinoSeleccionado] = useState(null); // Cambia a objeto
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -34,7 +35,6 @@ export default function BandejaMensajes() {
       })
       .catch(err => console.error("Error cargando conversaciones:", err));
 
-    // Cargar todos los usuarios disponibles para nuevo mensaje y excluir el usuario actual
     fetch(`http://localhost:8080/api/usuarios?idActual=${usuarioActual.idUsuario}`)
       .then(res => res.json())
       .then(data => {
@@ -44,10 +44,16 @@ export default function BandejaMensajes() {
       .catch(err => console.error("Error al obtener usuarios disponibles:", err));
   }, [usuarioActual.idUsuario]);
 
+  // Opciones para react-select
+  const opcionesUsuarios = usuariosDisponibles.map(u => ({
+    value: u.idUsuario,
+    label: `@${u.nombreUsuario} (${u.nombre})`
+  }));
+
   const iniciarConversacion = (e) => {
     e.preventDefault();
     if (destinoSeleccionado) {
-      navigate(`/mensajes/chat/${destinoSeleccionado}`);
+      navigate(`/mensajes/chat/${destinoSeleccionado.value}`);
     }
   };
 
@@ -56,18 +62,15 @@ export default function BandejaMensajes() {
       <h1 className="text-2xl font-bold mb-4">Mensajes</h1>
 
       <form onSubmit={iniciarConversacion} className="mb-6 flex gap-2 items-center">
-        <select
-          value={destinoSeleccionado}
-          onChange={(e) => setDestinoSeleccionado(e.target.value)}
-          className="border px-3 py-2 rounded w-full"
-        >
-          <option value="">-- Enviar mensaje a... --</option>
-          {usuariosDisponibles.map(u => (
-            <option key={u.idUsuario} value={u.idUsuario}>
-              @{u.nombreUsuario} ({u.nombre})
-            </option>
-          ))}
-        </select>
+        <div className="w-full">
+          <Select
+            options={opcionesUsuarios}
+            value={destinoSeleccionado}
+            onChange={setDestinoSeleccionado}
+            placeholder="Buscar usuario..."
+            isClearable
+          />
+        </div>
         <button
           type="submit"
           className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
