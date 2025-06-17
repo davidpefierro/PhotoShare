@@ -5,6 +5,7 @@ import { es } from "date-fns/locale";
 import { Heart } from "lucide-react";
 import { photoService } from "../services/photoService";
 import { useAuthStore } from "../stores/authStore";
+import Swal from 'sweetalert2';
 
 const PhotoDetailPage = () => {
   const { id } = useParams();
@@ -79,6 +80,42 @@ const PhotoDetailPage = () => {
     }
     setCommentLoading(false);
   };
+const handleDeleteComment = async (idComentario: number) => {
+  if (!isAuthenticated) return;
+  const result = await Swal.fire({
+    title: '¿Estás seguro?',
+    text: '¡No podrás recuperar este comentario!',
+    icon: 'warning',
+    showCancelButton: true,
+    confirmButtonColor: '#d33',
+    cancelButtonColor: '#3085d6',
+    confirmButtonText: 'Sí, eliminar',
+    cancelButtonText: 'Cancelar'
+  });
+
+  if (result.isConfirmed) {
+    const res = await photoService.eliminarComentario(idComentario, user.nombreUsuario);
+
+    // Imprime todo el error para diagnosticar
+    if (!res.success) {
+      console.error("Error al eliminar comentario:", res.error);
+    }
+
+    if (res.success) {
+      setComments((prev) => prev.filter((c) => c.idComentario !== idComentario));
+      await Swal.fire('¡Eliminado!', 'El comentario ha sido eliminado.', 'success');
+    } else {
+      // Intenta mostrar el mensaje más detallado posible
+      const backendMsg =
+        res.error?.response?.data?.message ||
+        res.error?.response?.data?.error ||
+        res.error?.response?.statusText ||
+        (typeof res.error === "string" ? res.error : "") ||
+        'No se pudo eliminar el comentario. (Sin mensaje detallado del servidor)';
+      await Swal.fire('Error', backendMsg, 'error');
+    }
+  }
+};
 
   if (loading) return <div className="p-8">Cargando...</div>;
   if (!photo) return <div className="p-8">Foto no encontrada.</div>;
@@ -121,29 +158,38 @@ const PhotoDetailPage = () => {
           </div>
         </div>
 
-        {/* Comentarios */}
-        <div className="flex-1 overflow-y-auto px-4 py-3 space-y-4">
-          <p className="text-gray-700 font-medium">{photo.descripcion}</p>
-          {comments.length === 0 && (
-            <div className="text-gray-400 text-sm">No hay comentarios aún.</div>
-          )}
-          {comments.map((c) => (
-            <div key={c.idComentario} className="flex items-start space-x-3">
-              <div className="h-8 w-8 rounded-full bg-primary-100 flex items-center justify-center text-primary-700">
-                {c.nombreUsuario?.charAt(0).toUpperCase() || "U"}
-              </div>
-              <div>
-                <span className="font-semibold text-sm text-gray-800">@{c.nombreUsuario}</span>
-                <span className="ml-2 text-gray-700 text-sm">{c.contenido}</span>
-                <div className="text-xs text-gray-400 mt-1">
-                  {c.fechaPublicacion
-                    ? formatDistanceToNow(new Date(c.fechaPublicacion), { addSuffix: true, locale: es })
-                    : ""}
-                </div>
-              </div>
+       {/* Comentarios */}
+      <div className="flex-1 overflow-y-auto px-4 py-3 space-y-4">
+        <p className="text-gray-700 font-medium">{photo.descripcion}</p>
+        {comments.length === 0 && (
+          <div className="text-gray-400 text-sm">No hay comentarios aún.</div>
+        )}
+        {comments.map((c) => (
+          <div key={c.idComentario} className="flex items-start space-x-3">
+            <div className="h-8 w-8 rounded-full bg-primary-100 flex items-center justify-center text-primary-700">
+              {c.nombreUsuario?.charAt(0).toUpperCase() || "U"}
             </div>
-          ))}
-        </div>
+            <div>
+              <span className="font-semibold text-sm text-gray-800">@{c.nombreUsuario}</span>
+              <span className="ml-2 text-gray-700 text-sm">{c.contenido}</span>
+              <div className="text-xs text-gray-400 mt-1">
+                {c.fechaPublicacion
+                  ? formatDistanceToNow(new Date(c.fechaPublicacion), { addSuffix: true, locale: es })
+                  : ""}
+              </div>
+              {/* Botón eliminar solo para el autor */}
+              {(user?.nombreUsuario === c.nombreUsuario) && (
+                <button
+                  className="text-red-500 text-xs mt-1 hover:underline"
+                  onClick={() => handleDeleteComment(c.idComentario)}
+                >
+                  Eliminar
+                </button>
+              )}
+            </div>
+          </div>
+        ))}
+      </div>
 
         {/* Likes y comentar */}
         <div className="border-t p-4">

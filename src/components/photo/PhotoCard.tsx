@@ -29,7 +29,7 @@ useEffect(() => {
   if (user?.idUsuario && photoId) {
     photoService.userLiked(photoId, user.idUsuario).then(liked => {
       setUserLiked(liked);
-      console.log('[PhotoCard] userLiked de', photoId, 'para usuario', user.idUsuario, ':', liked);
+      // console.log('[PhotoCard] userLiked de', photoId, 'para usuario', user.idUsuario, ':', liked);
     });
   } else {
     setUserLiked(false);

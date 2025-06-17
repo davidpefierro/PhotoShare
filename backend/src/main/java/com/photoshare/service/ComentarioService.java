@@ -71,4 +71,18 @@ public class ComentarioService {
 
         return dto;
     }
+
+public boolean eliminarComentarioSiAutor(Integer idComentario, String username) {
+    Comentario comentario = comentarioRepository.findById(idComentario)
+        .orElseThrow(NoSuchElementException::new);
+
+    // Busca el usuario autor del comentario usando idUsuario
+    Optional<Usuario> usuarioOpt = usuarioRepository.findById(comentario.getIdUsuario());
+    if (usuarioOpt.isEmpty() || !usuarioOpt.get().getNombreUsuario().equals(username)) {
+        return false;
+    }
+
+    comentarioRepository.delete(comentario);
+    return true;
+}
 }

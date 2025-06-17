@@ -24,7 +24,7 @@ export const photoService = {
             idFoto: foto.idFoto,
             idUsuario: foto.idUsuario,
             fechaPublicacion: foto.fechaPublicacion,
-            userLiked: foto.userLiked,     // ← este campo lo pone el backend según el usuario autenticado
+            userLiked: foto.userLiked,     // este campo lo pone el backend según el usuario autenticado
             likesCount: foto.likesCount,
             commentsCount: foto.commentsCount,
           })),
@@ -88,6 +88,14 @@ userLiked: async (idFoto: number, idUsuario: number): Promise<boolean> => {
     return false;
   } catch (e) {
     return false;
+  }
+},
+eliminarComentario: async (idComentario: number, nombreUsuario: string) => {
+  try {
+    const response = await api.delete(`/comentarios/${idComentario}?nombreUsuario=${encodeURIComponent(nombreUsuario)}`);
+    return { success: response.status === 200 || response.status === 204 };
+  } catch (error) {
+    return { success: false, error };
   }
 },
   subirFoto: async (datosFoto: PhotoCreateRequest & { idUsuario: number }): Promise<ApiResponse<Photo>> => {
