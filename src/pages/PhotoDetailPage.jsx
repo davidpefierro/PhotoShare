@@ -80,49 +80,47 @@ const PhotoDetailPage = () => {
     }
     setCommentLoading(false);
   };
-const handleDeleteComment = async (idComentario: number) => {
-  if (!isAuthenticated) return;
-  const result = await Swal.fire({
-    title: '¿Estás seguro?',
-    text: '¡No podrás recuperar este comentario!',
-    icon: 'warning',
-    showCancelButton: true,
-    confirmButtonColor: '#d33',
-    cancelButtonColor: '#3085d6',
-    confirmButtonText: 'Sí, eliminar',
-    cancelButtonText: 'Cancelar'
-  });
 
-  if (result.isConfirmed) {
-    const res = await photoService.eliminarComentario(idComentario, user.nombreUsuario);
+  const handleDeleteComment = async (idComentario) => {
+    if (!isAuthenticated) return;
+    const result = await Swal.fire({
+      title: '¿Estás seguro?',
+      text: '¡No podrás recuperar este comentario!',
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#d33',
+      cancelButtonColor: '#3085d6',
+      confirmButtonText: 'Sí, eliminar',
+      cancelButtonText: 'Cancelar'
+    });
 
-    // Imprime todo el error para diagnosticar
-    if (!res.success) {
-      console.error("Error al eliminar comentario:", res.error);
+    if (result.isConfirmed) {
+      const res = await photoService.eliminarComentario(idComentario, user.nombreUsuario);
+
+      if (!res.success) {
+        console.error("Error al eliminar comentario:", res.error);
+      }
+
+      if (res.success) {
+        setComments((prev) => prev.filter((c) => c.idComentario !== idComentario));
+        await Swal.fire('¡Eliminado!', 'El comentario ha sido eliminado.', 'success');
+      } else {
+        const backendMsg =
+          res.error?.response?.data?.message ||
+          res.error?.response?.data?.error ||
+          res.error?.response?.statusText ||
+          (typeof res.error === "string" ? res.error : "") ||
+          'No se pudo eliminar el comentario. (Sin mensaje detallado del servidor)';
+        await Swal.fire('Error', backendMsg, 'error');
+      }
     }
-
-    if (res.success) {
-      setComments((prev) => prev.filter((c) => c.idComentario !== idComentario));
-      await Swal.fire('¡Eliminado!', 'El comentario ha sido eliminado.', 'success');
-    } else {
-      // Intenta mostrar el mensaje más detallado posible
-      const backendMsg =
-        res.error?.response?.data?.message ||
-        res.error?.response?.data?.error ||
-        res.error?.response?.statusText ||
-        (typeof res.error === "string" ? res.error : "") ||
-        'No se pudo eliminar el comentario. (Sin mensaje detallado del servidor)';
-      await Swal.fire('Error', backendMsg, 'error');
-    }
-  }
-};
+  };
 
   if (loading) return <div className="p-8">Cargando...</div>;
   if (!photo) return <div className="p-8">Foto no encontrada.</div>;
 
   return (
     <div className="relative flex flex-col md:flex-row min-h-screen bg-gray-100">
-      {/* Botón de volver */}
       <button
         onClick={() => navigate("/explore")}
         className="absolute top-6 left-6 z-10 bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 shadow"
@@ -130,7 +128,6 @@ const handleDeleteComment = async (idComentario: number) => {
         ← Atrás
       </button>
 
-      {/* Foto */}
       <div className="w-full md:flex-1 flex justify-center items-center bg-black">
         <div className="bg-white rounded-lg shadow-lg p-6 m-4 border border-gray-300 flex justify-center items-center w-full md:w-auto">
           <img
@@ -141,9 +138,7 @@ const handleDeleteComment = async (idComentario: number) => {
         </div>
       </div>
 
-      {/* Comentarios y detalles */}
       <div className="w-full md:max-w-md bg-white border-t md:border-t-0 md:border-l border-gray-200 flex flex-col">
-        {/* Header */}
         <div className="flex items-center px-4 py-3 border-b">
           <div className="h-9 w-9 rounded-full bg-primary-200 flex items-center justify-center text-primary-700">
             {photo.nombreUsuario?.charAt(0).toUpperCase() || "U"}
@@ -158,40 +153,37 @@ const handleDeleteComment = async (idComentario: number) => {
           </div>
         </div>
 
-       {/* Comentarios */}
-      <div className="flex-1 overflow-y-auto px-4 py-3 space-y-4">
-        <p className="text-gray-700 font-medium">{photo.descripcion}</p>
-        {comments.length === 0 && (
-          <div className="text-gray-400 text-sm">No hay comentarios aún.</div>
-        )}
-        {comments.map((c) => (
-          <div key={c.idComentario} className="flex items-start space-x-3">
-            <div className="h-8 w-8 rounded-full bg-primary-100 flex items-center justify-center text-primary-700">
-              {c.nombreUsuario?.charAt(0).toUpperCase() || "U"}
-            </div>
-            <div>
-              <span className="font-semibold text-sm text-gray-800">@{c.nombreUsuario}</span>
-              <span className="ml-2 text-gray-700 text-sm">{c.contenido}</span>
-              <div className="text-xs text-gray-400 mt-1">
-                {c.fechaPublicacion
-                  ? formatDistanceToNow(new Date(c.fechaPublicacion), { addSuffix: true, locale: es })
-                  : ""}
+        <div className="flex-1 overflow-y-auto px-4 py-3 space-y-4">
+          <p className="text-gray-700 font-medium">{photo.descripcion}</p>
+          {comments.length === 0 && (
+            <div className="text-gray-400 text-sm">No hay comentarios aún.</div>
+          )}
+          {comments.map((c) => (
+            <div key={c.idComentario} className="flex items-start space-x-3">
+              <div className="h-8 w-8 rounded-full bg-primary-100 flex items-center justify-center text-primary-700">
+                {c.nombreUsuario?.charAt(0).toUpperCase() || "U"}
               </div>
-              {/* Botón eliminar solo para el autor */}
-              {(user?.nombreUsuario === c.nombreUsuario) && (
-                <button
-                  className="text-red-500 text-xs mt-1 hover:underline"
-                  onClick={() => handleDeleteComment(c.idComentario)}
-                >
-                  Eliminar
-                </button>
-              )}
+              <div>
+                <span className="font-semibold text-sm text-gray-800">@{c.nombreUsuario}</span>
+                <span className="ml-2 text-gray-700 text-sm">{c.contenido}</span>
+                <div className="text-xs text-gray-400 mt-1">
+                  {c.fechaPublicacion
+                    ? formatDistanceToNow(new Date(c.fechaPublicacion), { addSuffix: true, locale: es })
+                    : ""}
+                </div>
+                {(user?.nombreUsuario === c.nombreUsuario) && (
+                  <button
+                    className="text-red-500 text-xs mt-1 hover:underline"
+                    onClick={() => handleDeleteComment(c.idComentario)}
+                  >
+                    Eliminar
+                  </button>
+                )}
+              </div>
             </div>
-          </div>
-        ))}
-      </div>
+          ))}
+        </div>
 
-        {/* Likes y comentar */}
         <div className="border-t p-4">
           <div className="flex items-center mb-4">
             <button

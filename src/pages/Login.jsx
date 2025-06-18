@@ -1,9 +1,8 @@
-import { useState } from 'react';
+import React, { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { Link, useNavigate } from 'react-router-dom';
 import { authService } from '../services/authService';
 import { useAuthStore } from '../stores/authStore';
-import { LoginRequest } from '../types';
 import { Camera, Lock, User, Eye, EyeOff } from 'lucide-react';
 import Button from '../components/ui/Button';
 import Input from '../components/ui/Input';
@@ -19,9 +18,9 @@ const Login = () => {
     register,
     handleSubmit,
     formState: { errors },
-  } = useForm<LoginRequest>();
+  } = useForm();
 
-  const onSubmit = async (data: LoginRequest) => {
+  const onSubmit = async (data) => {
     setIsLoading(true);
 
     try {
@@ -32,17 +31,15 @@ const Login = () => {
       } else {
         Swal.fire('Error', response.message || 'Credenciales inválidas', 'error');
       }
-    } catch (err: any) {
+    } catch (err) {
       const errorMessage =
         err.response?.data?.message ||
         'Ha ocurrido un error inesperado. Por favor, inténtalo más tarde.';
       Swal.fire('Error', errorMessage, 'error');
-    }
-    finally {
+    } finally {
       setIsLoading(false);
     }
   };
-
 
   const togglePasswordVisibility = () => setShowPassword(!showPassword);
 
@@ -119,7 +116,6 @@ const Login = () => {
                   Recordarme
                 </label>
               </div>
-
             </div>
 
             <div>
@@ -128,8 +124,6 @@ const Login = () => {
               </Button>
             </div>
           </form>
-
-
         </div>
       </div>
     </div>

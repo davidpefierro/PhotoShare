@@ -1,17 +1,7 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
-import { AuthUser } from '../types';
 
-interface AuthState {
-  user: AuthUser | null;
-  isAuthenticated: boolean;
-  isAdmin: boolean;
-  login: (user: AuthUser) => void;
-  logout: () => void;
-  updateUser: (user: Partial<AuthUser>) => void;
-}
-
-export const useAuthStore = create<AuthState>()(
+export const useAuthStore = create(
   persist(
     (set, get) => ({
       user: null,

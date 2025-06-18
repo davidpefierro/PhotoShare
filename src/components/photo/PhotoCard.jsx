@@ -11,7 +11,6 @@ import { photoService } from '../../services/photoService';
 const PhotoCard = ({ photo, onLikeToggle, onDelete }) => {
   const { user, isAuthenticated } = useAuthStore();
 
-  // Estado local para MG y contador de likes
   const [userLiked, setUserLiked] = useState(photo.userLiked ?? false);
   const [likesCount, setLikesCount] = useState(photo.likesCount ?? 0);
   const [isLiking, setIsLiking] = useState(false);
@@ -24,19 +23,16 @@ const PhotoCard = ({ photo, onLikeToggle, onDelete }) => {
   const photoId = photo.idFoto;
   const isOwnPhoto = user?.id === userId || user?.idUsuario === userId;
 
-  // Sync userLiked con backend si cambia el usuario autenticado o la foto
-useEffect(() => {
-  if (user?.idUsuario && photoId) {
-    photoService.userLiked(photoId, user.idUsuario).then(liked => {
-      setUserLiked(liked);
-      // console.log('[PhotoCard] userLiked de', photoId, 'para usuario', user.idUsuario, ':', liked);
-    });
-  } else {
-    setUserLiked(false);
-  }
-}, [photoId, user?.idUsuario]);
+  useEffect(() => {
+    if (user?.idUsuario && photoId) {
+      photoService.userLiked(photoId, user.idUsuario).then(liked => {
+        setUserLiked(liked);
+      });
+    } else {
+      setUserLiked(false);
+    }
+  }, [photoId, user?.idUsuario]);
 
-  // Like/Unlike handler
   const handleLike = async () => {
     if (!isAuthenticated) return;
     if (isLiking) return;
@@ -49,7 +45,6 @@ useEffect(() => {
         result = await photoService.darLikeAFoto(photoId, user.idUsuario ?? user.id);
       }
       if (result.success) {
-        // Vuelve a consultar el estado real desde la base tras el cambio
         const liked = await photoService.userLiked(photoId, user.idUsuario ?? user.id);
         setUserLiked(liked);
         setLikesCount(result.likesCount);
@@ -64,36 +59,35 @@ useEffect(() => {
     }
   };
 
-  // Handle reportar
-const handleReport = async () => {
-  if (!isAuthenticated) return;
-  const { value: motivo } = await Swal.fire({
-    title: 'Reportar foto',
-    input: 'textarea',
-    inputLabel: 'Motivo del reporte',
-    inputPlaceholder: 'Describe por qué reportas esta foto...',
-    inputAttributes: { 'aria-label': 'Motivo del reporte' },
-    showCancelButton: true,
-    confirmButtonText: 'Enviar reporte',
-    cancelButtonText: 'Cancelar',
-    inputValidator: value => !value && 'Por favor, escribe un motivo'
-  });
-
-  if (motivo) {
-    const response = await photoService.reportarFoto({
-      idReportador: user.idUsuario ?? user.id,
-      idDenunciado: userId,
-      motivo,
-      idFoto: photo.idFoto
+  const handleReport = async () => {
+    if (!isAuthenticated) return;
+    const { value: motivo } = await Swal.fire({
+      title: 'Reportar foto',
+      input: 'textarea',
+      inputLabel: 'Motivo del reporte',
+      inputPlaceholder: 'Describe por qué reportas esta foto...',
+      inputAttributes: { 'aria-label': 'Motivo del reporte' },
+      showCancelButton: true,
+      confirmButtonText: 'Enviar reporte',
+      cancelButtonText: 'Cancelar',
+      inputValidator: value => !value && 'Por favor, escribe un motivo'
     });
-    if (response.success) {
-      await Swal.fire('¡Reporte enviado!', 'Gracias por ayudarnos a mantener la comunidad segura.', 'success');
-    } else {
-      await Swal.fire('Error', response.message || 'No se pudo enviar el reporte.', 'error');
+
+    if (motivo) {
+      const response = await photoService.reportarFoto({
+        idReportador: user.idUsuario ?? user.id,
+        idDenunciado: userId,
+        motivo,
+        idFoto: photo.idFoto
+      });
+      if (response.success) {
+        await Swal.fire('¡Reporte enviado!', 'Gracias por ayudarnos a mantener la comunidad segura.', 'success');
+      } else {
+        await Swal.fire('Error', response.message || 'No se pudo enviar el reporte.', 'error');
+      }
     }
-  }
-};
-  // Delete handler con SweetAlert2
+  };
+
   const handleDelete = async () => {
     if (!isAuthenticated || !isOwnPhoto) return;
 
@@ -177,7 +171,6 @@ const handleReport = async () => {
           )}
         </div>
       </div>
-      {/* Imagen clickable (detalle) */}
       <Link to={`/fotografias/${photoId}`}>
         <img
           src={photo.url}
@@ -198,7 +191,6 @@ const handleReport = async () => {
             <Heart className={`h-5 w-5 ${userLiked ? 'fill-current' : ''}`} />
             <span className="ml-1 text-sm">{likesCount}</span>
           </button>
-          {/* Comentarios: también clickable */}
           <Link
             to={`/fotografias/${photoId}`}
             className="flex items-center text-gray-500 hover:text-primary-500"

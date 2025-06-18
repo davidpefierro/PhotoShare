@@ -1,7 +1,8 @@
+import React from "react";
 import { Navigate } from "react-router-dom";
 import { useAuthStore } from "../stores/authStore";
 
-export default function ProtectedAdminRoute({ children }: { children: JSX.Element }) {
+export default function ProtectedAdminRoute({ children }) {
   const { isAuthenticated, user } = useAuthStore();
 
   if (!isAuthenticated) {

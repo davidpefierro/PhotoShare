@@ -1,7 +1,7 @@
 import { useEffect } from 'react';
 import InfiniteScroll from 'react-infinite-scroll-component';
 import { usePhotoStore } from '../../stores/photoStore';
-import { photoService } from '../services/photoService'; // Ajusta la ruta si es diferente
+import { photoService } from '../services/photoService';
 import PhotoCard from './PhotoCard';
 import { Camera } from 'lucide-react';
 
@@ -9,17 +9,13 @@ const PhotoGrid = () => {
   const { photos, loading, hasMore, fetchPhotos } = usePhotoStore();
 
   useEffect(() => {
-    // Siempre recarga la primera página al montar el componente
     fetchPhotos(true); // true = reset (opcional, depende de tu implementación)
-    // eslint-disable-next-line
   }, []);
 
-  // Cuando se elimina, recarga la lista completa (opción 2)
   const handleDeletePhoto = async () => {
     await fetchPhotos(true); // true = reset
   };
 
-  // ORDENAR por fechaPublicacion DESCENDENTE (más nuevas primero)
   const orderedPhotos = photos.slice().sort(
     (a, b) => new Date(b.fechaPublicacion) - new Date(a.fechaPublicacion)
   );

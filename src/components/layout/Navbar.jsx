@@ -31,7 +31,6 @@ const Navbar = () => {
       }
     };
 
-
     fetchUnreadCount();
     // Consultar nuevos mensajes cada 30 segundos
     const interval = setInterval(fetchUnreadCount, 30000);

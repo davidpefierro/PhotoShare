@@ -1,9 +1,8 @@
-import { useState } from 'react';
+import React, { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { Link, useNavigate } from 'react-router-dom';
 import { authService } from '../services/authService';
 import { useAuthStore } from '../stores/authStore';
-import { RegisterRequest } from '../types';
 import { Camera, User, Mail, Lock } from 'lucide-react';
 import Button from '../components/ui/Button';
 import Input from '../components/ui/Input';
@@ -19,15 +18,14 @@ const Register = () => {
     handleSubmit,
     formState: { errors },
     watch,
-  } = useForm<RegisterRequest & { confirmPassword: string }>();
+  } = useForm();
 
   const contrasena = watch('contrasena', '');
 
-  const onSubmit = async (data: RegisterRequest & { confirmPassword: string }) => {
-    // Si hay errores de validación, mostrar con SweetAlert
+  const onSubmit = async (data) => {
     if (Object.keys(errors).length > 0) {
       const firstErrorKey = Object.keys(errors)[0];
-      const firstErrorMessage = errors[firstErrorKey as keyof typeof errors]?.message;
+      const firstErrorMessage = errors[firstErrorKey]?.message;
       if (firstErrorMessage) {
         Swal.fire({
           icon: 'error',

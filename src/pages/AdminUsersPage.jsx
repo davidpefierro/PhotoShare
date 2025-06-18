@@ -137,7 +137,7 @@ export default function AdminUsersPage() {
             Ir a reportes
           </button>
         </div>
-        <h1 className="text-2xl font-bold mb-6">Administrar usuarios</h1>
+        {/* <h1 className="text-2xl font-bold mb-6">Administrar usuarios</h1> */}
         <div className="flex gap-4 mb-4 items-center">
           <input
             type="text"

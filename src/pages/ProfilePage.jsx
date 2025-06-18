@@ -6,37 +6,18 @@ import { faPen } from '@fortawesome/free-solid-svg-icons';
 import Swal from 'sweetalert2';
 import { useAuthStore } from "../stores/authStore";
 
-type UsuarioDTO = {
-  idUsuario: number;
-  nombre: string;
-  apellidos: string;
-  nombreUsuario: string;
-  correo: string;
-  // rol?: string; // Inclúyelo solo si lo usas en el frontend
-  // estado?: string;
-};
-
-type Foto = {
-  idFoto: number;
-  url: string;
-  descripcion: string;
-  fechaPublicacion: string;
-  nombreUsuario: string;
-  idUsuario: number;
-};
-
-const ProfilePage: React.FC = () => {
-  const { id } = useParams<{ id: string }>();
-  const [user, setUser] = useState<UsuarioDTO | null>(null);
+const ProfilePage = () => {
+  const { id } = useParams();
+  const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const [error, setError] = useState(null);
 
-  const [photos, setPhotos] = useState<Foto[]>([]);
+  const [photos, setPhotos] = useState([]);
   const [photosLoading, setPhotosLoading] = useState(true);
 
   // Modal edición
   const [isEditOpen, setIsEditOpen] = useState(false);
-  const [editData, setEditData] = useState<UsuarioDTO | null>(null);
+  const [editData, setEditData] = useState(null);
 
   // Acceso al usuario autenticado
   const authUser = useAuthStore((state) => state.user);
@@ -91,12 +72,12 @@ const ProfilePage: React.FC = () => {
     setEditData(null);
   };
 
-  const handleEditChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleEditChange = (e) => {
     if (!editData) return;
     setEditData({ ...editData, [e.target.name]: e.target.value });
   };
 
-  const handleEditSubmit = async (e: React.FormEvent) => {
+  const handleEditSubmit = async (e) => {
     e.preventDefault();
     if (!editData) return;
     try {

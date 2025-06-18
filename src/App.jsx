@@ -8,18 +8,15 @@ import Home from './pages/Home';
 import Login from './pages/Login';
 import Register from './pages/Register';
 import Upload from './pages/Upload';
-import ConversationPage from "./pages/ConversationPage";
 import AdminUsersPage from "./pages/AdminUsersPage";
 import ProfilePage from './pages/ProfilePage';
 import ProtectedAdminRoute from "./components/ProtectedAdminRoute";
 import BandejaMensajes from './pages/BandejaMensajes';
 import ChatPrivado from './pages/ChatPrivado';
 import PhotoDetailPage from './pages/PhotoDetailPage';
-import AdminReportesPage from './pages/AdminReportesPage'; // Ajusta la ruta si es distinta
+import AdminReportesPage from './pages/AdminReportesPage';
 
 import '@fortawesome/fontawesome-free/css/all.min.css';
-
-
 
 // Protected route component
 const ProtectedRoute = ({ children }) => {
@@ -91,7 +88,7 @@ function App() {
               }
             />
 
-            {/* Photo Detail Route - AÑADE ESTA RUTA */}
+            {/* Photo Detail Route */}
             <Route path="/fotografias/:id" element={<PhotoDetailPage />} />
             {/* Fallback route */}
             <Route path="*" element={<Navigate to="/" />} />

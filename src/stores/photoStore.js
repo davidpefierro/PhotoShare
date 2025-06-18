@@ -1,23 +1,8 @@
 import { create } from 'zustand';
-import { Photo, PageResponse } from '../types';
 import { photoService } from '../services/photoService';
-import { useAuthStore } from './authStore'; // Asegúrate de importar tu authStore
+import { useAuthStore } from './authStore';
 
-interface PhotoState {
-  photos: Photo[];
-  loading: boolean;
-  hasMore: boolean;
-  currentPage: number;
-  error: string | null;
-
-  fetchPhotos: (refresh?: boolean) => Promise<void>;
-  addPhoto: (photo: Photo) => void;
-  updatePhoto: (id: number, updatedPhoto: Partial<Photo>) => void;
-  removePhoto: (id: number) => void;
-  toggleLike: (id: number) => Promise<void>;
-}
-
-export const usePhotoStore = create<PhotoState>()((set, get) => ({
+export const usePhotoStore = create((set, get) => ({
   photos: [],
   loading: false,
   hasMore: true,
@@ -73,7 +58,7 @@ export const usePhotoStore = create<PhotoState>()((set, get) => ({
 
   removePhoto: (id) => {
     set((state) => ({
-      photos: state.photos.filter(f => f.idFoto !== id)
+      photos: state.photos.filter((f) => f.idFoto !== id),
     }));
   },
 
@@ -87,10 +72,10 @@ export const usePhotoStore = create<PhotoState>()((set, get) => ({
       photos: state.photos.map((p) =>
         p.id === id
           ? {
-            ...p,
-            userLiked: !p.userLiked,
-            likesCount: p.userLiked ? p.likesCount - 1 : p.likesCount + 1,
-          }
+              ...p,
+              userLiked: !p.userLiked,
+              likesCount: p.userLiked ? p.likesCount - 1 : p.likesCount + 1,
+            }
           : p
       ),
     }));
@@ -103,9 +88,7 @@ export const usePhotoStore = create<PhotoState>()((set, get) => ({
       if (response.success && response.data) {
         set((state) => ({
           photos: state.photos.map((p) =>
-            p.id === id
-              ? { ...p, ...response.data }
-              : p
+            p.id === id ? { ...p, ...response.data } : p
           ),
         }));
       } else if (!response.success) {
@@ -113,10 +96,10 @@ export const usePhotoStore = create<PhotoState>()((set, get) => ({
           photos: state.photos.map((p) =>
             p.id === id
               ? {
-                ...p,
-                userLiked: !p.userLiked,
-                likesCount: p.userLiked ? p.likesCount - 1 : p.likesCount + 1,
-              }
+                  ...p,
+                  userLiked: !p.userLiked,
+                  likesCount: p.userLiked ? p.likesCount - 1 : p.likesCount + 1,
+                }
               : p
           ),
         }));
@@ -126,10 +109,10 @@ export const usePhotoStore = create<PhotoState>()((set, get) => ({
         photos: state.photos.map((p) =>
           p.id === id
             ? {
-              ...p,
-              userLiked: !p.userLiked,
-              likesCount: p.userLiked ? p.likesCount - 1 : p.likesCount + 1,
-            }
+                ...p,
+                userLiked: !p.userLiked,
+                likesCount: p.userLiked ? p.likesCount - 1 : p.likesCount + 1,
+              }
             : p
         ),
       }));

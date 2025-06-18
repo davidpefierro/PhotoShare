@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Upload, Image as ImageIcon, X } from 'lucide-react';
 import { useAuthStore } from '../stores/authStore';
@@ -7,15 +7,15 @@ import Button from '../components/ui/Button';
 import Input from '../components/ui/Input';
 
 const UploadPage = () => {
-  const [selectedFile, setSelectedFile] = useState<File | null>(null);
-  const [preview, setPreview] = useState<string | null>(null);
+  const [selectedFile, setSelectedFile] = useState(null);
+  const [preview, setPreview] = useState(null);
   const [description, setDescription] = useState('');
   const [isUploading, setIsUploading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [error, setError] = useState(null);
   const navigate = useNavigate();
   const { isAuthenticated, user } = useAuthStore(); // <-- AÑADIDO user
 
-  const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileSelect = (event) => {
     const file = event.target.files?.[0];
     if (file) {
       if (file.size > 10 * 1024 * 1024) { // 10MB limit
@@ -34,7 +34,7 @@ const UploadPage = () => {
       // Create preview
       const reader = new FileReader();
       reader.onloadend = () => {
-        setPreview(reader.result as string);
+        setPreview(reader.result);
       };
       reader.readAsDataURL(file);
     }
@@ -63,19 +63,19 @@ const UploadPage = () => {
         description: description.trim(),
         nombreUsuario: user.nombreUsuario
       });
-      console.log(response)
+      console.log(response);
       if (response.success && response.data) {
         navigate(`/fotografias/${response.data.id}`);
       } else {
         setError(response.message || 'Error al subir la foto');
       }
     } catch (err) {
-      alert(err)
+      alert(err);
       setError('Ha ocurrido un error inesperado');
     } finally {
       setIsUploading(false);
     }
-      window.location.reload();
+    window.location.reload();
   };
 
   const clearSelection = () => {
@@ -129,7 +129,7 @@ const UploadPage = () => {
             <div className="space-y-4">
               <div className="relative">
                 <img
-                  src={preview!}
+                  src={preview}
                   alt="Vista previa"
                   className="w-full h-96 object-cover rounded-lg"
                 />
