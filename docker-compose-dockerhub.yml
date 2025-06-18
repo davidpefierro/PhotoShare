@@ -1,0 +1,43 @@
+services:
+  # Base de datos
+  db:
+    image: davidpefie/mysql-photoshare:latest
+    ports:
+      - "3310:3306"
+    networks:
+      - photoshare-network
+
+  # Backend
+  backend:
+    image: davidpefie/backend-photoshare:latest
+    ports:
+      - "8080:8080"
+    depends_on:
+      - db
+    restart: unless-stopped
+    environment:
+      - SPRING_DATASOURCE_URL=jdbc:mysql://db:3306/photoshare?useSSL=false&allowPublicKeyRetrieval=true
+      - SPRING_DATASOURCE_USERNAME=root
+      - SPRING_DATASOURCE_PASSWORD=password
+      - SPRING_JPA_HIBERNATE_DDL_AUTO=update
+      - FILE_UPLOAD_DIR=/app/uploads
+      - JWT_SECRET=XyVbE7p9z3SwQ1t6LmR2KsGnT9YlMvRwU6PqZxNcBvHsJkLpQ
+      - JWT_EXPIRATION=86400000
+    networks:
+      - photoshare-network
+
+  # Frontend
+  frontend:
+    image: davidpefie/frontend-photoshare:latest
+    ports:
+      - "80:80"
+    depends_on:
+      - backend
+    environment:
+      - VITE_API_URL=http://localhost/api
+    networks:
+      - photoshare-network
+
+networks:
+  photoshare-network:
+    driver: bridge
